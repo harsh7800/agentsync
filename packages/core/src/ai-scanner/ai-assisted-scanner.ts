@@ -96,6 +96,15 @@ export class AIAssistedScanner {
     const aiAnalysisPerformed = !!(options.autoDetect || options.analyzeContent || 
                                options.prioritizeByRelevance || options.analyzeComplexity);
 
+    // DEBUG: Log what's happening
+    console.log('[DEBUG] AI-AssistedScanner:', {
+      localAgents: baseResult.agents.local.length,
+      systemAgents: baseResult.agents.system.length,
+      allAgentsLength: allAgents.length,
+      aiAnalysisPerformed,
+      prioritizeByRelevance: options.prioritizeByRelevance
+    });
+
     // Enhance agents with AI data
     if (aiAnalysisPerformed) {
       for (const agent of allAgents) {
@@ -109,6 +118,13 @@ export class AIAssistedScanner {
           await this.calculateRelevanceScore(agent);
         }
       }
+      
+      // DEBUG: Check if scores were set
+      console.log('[DEBUG] After enhancement:', {
+        agentsWithRelevanceScore: allAgents.filter(a => a.relevanceScore !== undefined).length,
+        agentsWithComplexity: allAgents.filter(a => a.complexity !== undefined).length,
+        sampleAgent: allAgents[0] ? { relevanceScore: allAgents[0].relevanceScore, complexity: allAgents[0].complexity } : null
+      });
     }
 
     // Build enhanced result
