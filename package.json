@@ -8,7 +8,7 @@
     "url": "https://github.com/agent-sync/agentsync"
   },
   "scripts": {
-    "build": "pnpm -r build",
+    "build": "pnpm -r exec -- rm -rf dist tsconfig.tsbuildinfo && pnpm -r build",
     "dev": "pnpm --filter @agent-sync/cli dev",
     "start": "pnpm --filter @agent-sync/cli start",
     "test": "vitest",
