@@ -261,9 +261,10 @@ export class AIAssistedScanner {
     const patterns: string[] = [];
     const pathPatterns = new Map<string, number>();
 
-    // Analyze common path patterns
+    // Analyze common path patterns (normalize for cross-platform)
     for (const agent of agents) {
-      const dir = agent.path.substring(0, agent.path.lastIndexOf('/'));
+      const normalizedPath = agent.path.replace(/\\/g, '/');
+      const dir = normalizedPath.substring(0, normalizedPath.lastIndexOf('/'));
       pathPatterns.set(dir, (pathPatterns.get(dir) || 0) + 1);
     }
 

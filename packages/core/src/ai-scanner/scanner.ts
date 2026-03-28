@@ -61,7 +61,6 @@ export class Scanner {
         } catch (error) {
           const errorMsg = `Error scanning ${basePath}: ${error instanceof Error ? error.message : error}`;
           errors.push(errorMsg);
-          console.warn(`⚠️  ${errorMsg}`);
         }
       }
 
@@ -270,8 +269,12 @@ export class Scanner {
 
   /**
    * Check if a file path matches any of the glob patterns
+   * Handles both Unix (/) and Windows (\) path separators
    */
   private matchesPatterns(filePath: string, patterns: string[]): boolean {
+    // Normalize file path to use forward slashes for cross-platform matching
+    const normalizedPath = filePath.replace(/\\/g, '/');
+
     for (const pattern of patterns) {
       // Simple glob matching - convert glob to regex
       const regexPattern = pattern
@@ -281,8 +284,8 @@ export class Scanner {
         .replace(/<<<GLOBSTAR>>>/g, '.*');
       
       try {
-        const regex = new RegExp(regexPattern);
-        if (regex.test(filePath)) {
+        const regex = new RegExp(regexPattern, 'i'); // Case-insensitive for cross-platform
+        if (regex.test(normalizedPath)) {
           return true;
         }
       } catch {
