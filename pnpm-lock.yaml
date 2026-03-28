@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  string-width: ^4.2.3
+
 importers:
 
   .:
@@ -1055,7 +1058,7 @@ packages:
       camelcase: 8.0.0
       chalk: 5.6.2
       cli-boxes: 3.0.0
-      string-width: 7.2.0
+      string-width: 4.2.3
       type-fest: 4.41.0
       widest-line: 5.0.0
       wrap-ansi: 9.0.2
@@ -1269,10 +1272,6 @@ packages:
     dependencies:
       esutils: 2.0.3
     dev: true
-
-  /emoji-regex@10.6.0:
-    resolution: {integrity: sha512-toUI84YS5YmxW219erniWD0CIVOo46xGKColeNQRgOzDorgBi1v4D71/OFzgD9GO2UGKIv1C3Sp8DAn0+j5w7A==}
-    dev: false
 
   /emoji-regex@8.0.0:
     resolution: {integrity: sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==}
@@ -1512,11 +1511,6 @@ packages:
     requiresBuild: true
     dev: true
     optional: true
-
-  /get-east-asian-width@1.5.0:
-    resolution: {integrity: sha512-CQ+bEO+Tva/qlmw24dCejulK5pMzVnUOFOijVogd3KQs07HnRIgp8TGipvCCRT06xeYEbpbgwaCxglFyiuIcmA==}
-    engines: {node: '>=18'}
-    dev: false
 
   /get-func-name@2.0.2:
     resolution: {integrity: sha512-8vXOvuE167CtIc3OyItco7N/dpRtBbYOsPsXCz7X/PMnlGjYjSGuZJgM1Y7mmew7BKf9BqvLX2tnOVy1BBUsxQ==}
@@ -1990,7 +1984,7 @@ packages:
       is-unicode-supported: 2.1.0
       log-symbols: 7.0.1
       stdin-discarder: 0.3.1
-      string-width: 8.2.0
+      string-width: 4.2.3
     dev: false
 
   /p-limit@3.1.0:
@@ -2273,23 +2267,6 @@ packages:
       emoji-regex: 8.0.0
       is-fullwidth-code-point: 3.0.0
       strip-ansi: 6.0.1
-    dev: false
-
-  /string-width@7.2.0:
-    resolution: {integrity: sha512-tsaTIkKW9b4N+AEj+SVA+WhJzV7/zMhcSu78mLKWSk7cXMOSHsBKFWUs0fWwq8QyK3MgJBQRX6Gbi4kYbdvGkQ==}
-    engines: {node: '>=18'}
-    dependencies:
-      emoji-regex: 10.6.0
-      get-east-asian-width: 1.5.0
-      strip-ansi: 7.2.0
-    dev: false
-
-  /string-width@8.2.0:
-    resolution: {integrity: sha512-6hJPQ8N0V0P3SNmP6h2J99RLuzrWz2gvT7VnK5tKvrNqJoyS9W4/Fb8mo31UiPvy00z7DQXkP2hnKBVav76thw==}
-    engines: {node: '>=20'}
-    dependencies:
-      get-east-asian-width: 1.5.0
-      strip-ansi: 7.2.0
     dev: false
 
   /string_decoder@1.3.0:
@@ -2585,7 +2562,7 @@ packages:
     resolution: {integrity: sha512-c9bZp7b5YtRj2wOe6dlj32MK+Bx/M/d+9VB2SHM1OtsUHR0aV0tdP6DWh/iMt0kWi1t5g1Iudu6hQRNd1A4PVA==}
     engines: {node: '>=18'}
     dependencies:
-      string-width: 7.2.0
+      string-width: 4.2.3
     dev: false
 
   /word-wrap@1.2.5:
@@ -2607,7 +2584,7 @@ packages:
     engines: {node: '>=18'}
     dependencies:
       ansi-styles: 6.2.3
-      string-width: 7.2.0
+      string-width: 4.2.3
       strip-ansi: 7.2.0
     dev: false
 
