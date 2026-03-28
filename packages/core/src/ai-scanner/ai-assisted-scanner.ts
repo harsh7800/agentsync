@@ -202,12 +202,15 @@ export class AIAssistedScanner {
         complexity = 'high';
       }
 
+      // Set complexity directly on agent (for test compatibility)
+      agent.complexity = complexity;
       agent.metadata = {
         ...agent.metadata,
         complexity,
         lineCount: lines
       };
     } catch {
+      agent.complexity = 'low';
       agent.metadata = { ...agent.metadata, complexity: 'low' };
     }
   }
@@ -243,6 +246,8 @@ export class AIAssistedScanner {
       score += 5;
     }
 
+    // Set relevanceScore directly on agent (for test compatibility)
+    agent.relevanceScore = Math.min(100, score);
     agent.metadata = {
       ...agent.metadata,
       relevanceScore: Math.min(100, score)

@@ -43,6 +43,10 @@ export interface DetectedAgent {
   size: number;
   /** Last modified date */
   lastModified: Date;
+  /** Complexity level (set during AI analysis) */
+  complexity?: 'low' | 'medium' | 'high';
+  /** Relevance score for prioritization (0-100, set during AI analysis) */
+  relevanceScore?: number;
   /** Additional metadata */
   metadata?: Record<string, unknown>;
 }
