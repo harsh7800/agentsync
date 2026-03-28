@@ -3,7 +3,7 @@ import { mkdtempSync, writeFileSync, mkdirSync, rmSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { AIAssistedScanner } from '../ai-scanner/ai-assisted-scanner.js';
-import type { AIAssistedScanOptions } from '../ai-scanner/types.js';
+import type { AIAssistedScanOptions, DetectedAgent } from '../ai-scanner/types.js';
 
 describe('S3-05: AI-Assisted Scan Mode', () => {
   let scanner: AIAssistedScanner;
@@ -123,11 +123,20 @@ describe('S3-05: AI-Assisted Scan Mode', () => {
       // Act
       const result = await scanner.scan(options);
 
-      // Assert
+      // Assert - check AI analysis was performed
       expect(result.duration).toBeGreaterThanOrEqual(0);
-      if (result.agents.local.length > 1) {
-        expect(result.agents.local[0].relevanceScore).toBeDefined();
-      }
+      expect(result.aiAnalysisPerformed).toBe(true);
+      
+      // Check that agents were found (either local or system)
+      const totalAgents = result.agents.local.length + result.agents.system.length;
+      expect(totalAgents).toBeGreaterThan(0);
+      
+      // When prioritizeByRelevance is enabled and agents are found,
+      // the relevance score should be set on the found agents
+      const allAgents = [...result.agents.local, ...result.agents.system];
+      const agentsWithScore = allAgents.filter(a => 'relevanceScore' in a && a.relevanceScore !== undefined);
+      // At least some agents should have relevance scores when prioritization is enabled
+      expect(agentsWithScore.length).toBeGreaterThan(0);
     });
 
     it('S3-05-006: Learn from file structure patterns', async () => {
@@ -168,11 +177,20 @@ describe('S3-05: AI-Assisted Scan Mode', () => {
       // Act
       const result = await scanner.scan(options);
 
-      // Assert
+      // Assert - check AI analysis was performed
       expect(result.duration).toBeGreaterThanOrEqual(0);
-      if (result.agents.local.length > 0) {
-        expect(result.agents.local[0].complexity).toBeDefined();
-      }
+      expect(result.aiAnalysisPerformed).toBe(true);
+      
+      // Check that agents were found (either local or system)
+      const totalAgents = result.agents.local.length + result.agents.system.length;
+      expect(totalAgents).toBeGreaterThan(0);
+      
+      // When analyzeComplexity is enabled and agents are found,
+      // the complexity should be set on the found agents
+      const allAgents = [...result.agents.local, ...result.agents.system];
+      const agentsWithComplexity = allAgents.filter(a => 'complexity' in a && a.complexity !== undefined);
+      // At least some agents should have complexity when analysis is enabled
+      expect(agentsWithComplexity.length).toBeGreaterThan(0);
     });
 
     it('S3-05-008: Detect deprecated or outdated configurations', async () => {
