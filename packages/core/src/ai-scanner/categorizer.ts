@@ -80,6 +80,19 @@ export class Categorizer {
       }
     }
 
+    // Temp directories should be considered 'local' (they're not system configs)
+    const tempPatterns = [
+      '/tmp/',
+      '/var/tmp/',
+      '/AppData/Local/Temp/',
+      '/temp/'
+    ];
+    for (const pattern of tempPatterns) {
+      if (normalizedPath.includes(pattern)) {
+        return 'local';
+      }
+    }
+
     // If it starts with home directory but not in system patterns,
     // it's likely a user-specific but non-config location
     if (normalizedPath.startsWith(normalizedHome)) {

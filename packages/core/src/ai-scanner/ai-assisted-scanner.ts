@@ -96,16 +96,6 @@ export class AIAssistedScanner {
     const aiAnalysisPerformed = !!(options.autoDetect || options.analyzeContent || 
                                options.prioritizeByRelevance || options.analyzeComplexity);
 
-    // Debug: Log initial state for every scan
-    console.log('[AI-AssistedScanner] Initial state:', {
-      basePath,
-      baseFilesScanned: baseResult.filesScanned,
-      localAgents: baseResult.agents.local.length,
-      systemAgents: baseResult.agents.system.length,
-      aiAnalysisPerformed,
-      options: { autoDetect: options.autoDetect, analyzeContent: options.analyzeContent, prioritizeByRelevance: options.prioritizeByRelevance, analyzeComplexity: options.analyzeComplexity }
-    });
-
     // Enhance agents with AI data
     if (aiAnalysisPerformed) {
       for (const agent of allAgents) {
@@ -119,16 +109,6 @@ export class AIAssistedScanner {
           await this.calculateRelevanceScore(agent);
         }
       }
-    }
-
-    // Debug: Log agent state after enhancement (only if scores are missing)
-    if (aiAnalysisPerformed && options.prioritizeByRelevance && allAgents.length > 0) {
-      const hasMissingScores = allAgents.some(a => a.relevanceScore === undefined);
-      console.log('[AI-AssistedScanner] DEBUG: After enhancement:', {
-        totalAgents: allAgents.length,
-        hasMissingScores,
-        scores: allAgents.slice(0, 2).map(a => ({ name: a.name, relevanceScore: a.relevanceScore }))
-      });
     }
 
     // Build enhanced result
@@ -229,14 +209,7 @@ export class AIAssistedScanner {
         complexity,
         lineCount: lines
       };
-    } catch (error) {
-      // Debug logging for CI
-      if (process.env.DEBUG_SCANNER) {
-        console.error('[AI-AssistedScanner] Error calculating complexity:', {
-          agentPath: agent.path,
-          error: error instanceof Error ? error.message : error
-        });
-      }
+    } catch {
       agent.complexity = 'low';
       agent.metadata = { ...agent.metadata, complexity: 'low' };
     }
@@ -280,16 +253,7 @@ export class AIAssistedScanner {
         ...agent.metadata,
         relevanceScore: Math.min(100, score)
       };
-    } catch (error) {
-      // Debug logging for CI
-      if (process.env.DEBUG_SCANNER) {
-        console.error('[AI-AssistedScanner] Error calculating relevance score:', {
-          agentPath: agent.path,
-          error: error instanceof Error ? error.message : error,
-          lastModified: agent.lastModified,
-          size: agent.size
-        });
-      }
+    } catch {
       agent.relevanceScore = 50; // Default fallback
     }
   }
