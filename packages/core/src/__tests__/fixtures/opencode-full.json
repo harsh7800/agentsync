@@ -1,0 +1,31 @@
+{
+  "mcp": {
+    "fetch": {
+      "type": "local",
+      "command": ["uvx", "mcp-server-fetch"],
+      "environment": {}
+    },
+    "git": {
+      "type": "local",
+      "command": ["uvx", "mcp-server-git", "--repository", "."],
+      "environment": {}
+    },
+    "memory": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-memory"],
+      "environment": {}
+    }
+  },
+  "agents": {
+    "onboarding-assistant": {
+      "description": "Helps new team members understand the codebase",
+      "system_prompt": "You are a friendly onboarding assistant. Help new team members understand the codebase structure, architecture, and development workflows. Answer questions patiently and provide relevant documentation links.",
+      "tools": ["filesystem", "git"]
+    },
+    "refactoring-partner": {
+      "description": "Assists with code refactoring and modernization",
+      "system_prompt": "You are a refactoring expert. Help improve code quality through systematic refactoring. Identify code smells, suggest improvements, and ensure behavior is preserved. Focus on making the codebase more maintainable.",
+      "tools": ["filesystem", "git"]
+    }
+  }
+}

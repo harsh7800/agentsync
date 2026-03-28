@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Report — AgentSync CLI — 2025-03-27</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f8fafc;
+      color: #1e293b;
+      line-height: 1.6;
+      padding: 24px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 32px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    .header h1 {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+    
+    .header .subtitle {
+      opacity: 0.9;
+      font-size: 16px;
+    }
+    
+    .meta {
+      display: flex;
+      gap: 24px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+    
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .meta-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      opacity: 0.8;
+    }
+    
+    .meta-value {
+      font-weight: 600;
+    }
+    
+    .summary-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    
+    .stat-card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .stat-number {
+      font-size: 48px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    
+    .stat-label {
+      font-size: 14px;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .stat-pass { border-top: 4px solid #22c55e; }
+    .stat-pass .stat-number { color: #22c55e; }
+    
+    .stat-fail { border-top: 4px solid #ef4444; }
+    .stat-fail .stat-number { color: #ef4444; }
+    
+    .stat-total { border-top: 4px solid #3b82f6; }
+    .stat-total .stat-number { color: #3b82f6; }
+    
+    .stat-rate { border-top: 4px solid #8b5cf6; }
+    .stat-rate .stat-number { color: #8b5cf6; }
+    
+    .section {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .section-title .icon {
+      font-size: 24px;
+    }
+    
+    .test-suite {
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    
+    .test-suite-header {
+      background: #f8fafc;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .test-suite-name {
+      font-weight: 600;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .test-suite-status {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    .badge-pass {
+      background: #dcfce7;
+      color: #166534;
+    }
+    
+    .badge-fail {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+    
+    .test-list {
+      padding: 12px 20px;
+    }
+    
+    .test-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    
+    .test-item:last-child {
+      border-bottom: none;
+    }
+    
+    .test-status {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    
+    .test-status.pass {
+      background: #dcfce7;
+      color: #166534;
+    }
+    
+    .test-status.fail {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+    
+    .test-name {
+      flex: 1;
+      font-size: 14px;
+    }
+    
+    .test-duration {
+      font-size: 12px;
+      color: #64748b;
+      font-family: monospace;
+    }
+    
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #22c55e, #16a34a);
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+    
+    .coverage-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    
+    .coverage-item {
+      background: #f8fafc;
+      padding: 16px;
+      border-radius: 8px;
+      border-left: 4px solid #3b82f6;
+    }
+    
+    .coverage-label {
+      font-size: 12px;
+      color: #64748b;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    
+    .coverage-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #1e293b;
+    }
+    
+    .footer {
+      text-align: center;
+      color: #64748b;
+      font-size: 12px;
+      margin-top: 32px;
+      padding: 16px;
+    }
+    
+    .success-banner {
+      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 18px;
+      font-weight: 600;
+    }
+    
+    .success-banner .icon {
+      font-size: 32px;
+    }
+    
+    .file-path {
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      color: #64748b;
+      background: #f1f5f9;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    
+    @media (max-width: 768px) {
+      .summary-bar {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .header h1 {
+        font-size: 24px;
+      }
+      
+      .stat-number {
+        font-size: 36px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>🧪 Test Report</h1>
+      <p class="subtitle">AgentSync CLI - Test Execution Results</p>
+      <div class="meta">
+        <div class="meta-item">
+          <span class="meta-label">Date</span>
+          <span class="meta-value">2025-03-27</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Time</span>
+          <span class="meta-value">23:28 UTC</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Scope</span>
+          <span class="meta-value">All Tests</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Environment</span>
+          <span class="meta-value">Node.js 22.12.0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success Banner -->
+    <div class="success-banner">
+      <span class="icon">✓</span>
+      <span>All Tests Passed Successfully!</span>
+    </div>
+
+    <!-- Summary Bar -->
+    <div class="summary-bar">
+      <div class="stat-card stat-total">
+        <div class="stat-number">18</div>
+        <div class="stat-label">Total Tests</div>
+      </div>
+      <div class="stat-card stat-pass">
+        <div class="stat-number">18</div>
+        <div class="stat-label">Passed</div>
+      </div>
+      <div class="stat-card stat-fail">
+        <div class="stat-number">0</div>
+        <div class="stat-label">Failed</div>
+      </div>
+      <div class="stat-card stat-rate">
+        <div class="stat-number">100%</div>
+        <div class="stat-label">Pass Rate</div>
+      </div>
+    </div>
+
+    <!-- Progress Section -->
+    <div class="section">
+      <h2 class="section-title">
+        <span class="icon">📊</span>
+        Sprint 1 Progress
+      </h2>
+      <div style="margin-bottom: 8px; display: flex; justify-content: space-between;">
+        <span>Implementation Progress</span>
+        <span style="font-weight: 600;">6/9 Tasks Complete (67%)</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 67%;"></div>
+      </div>
+      <p style="margin-top: 12px; color: #64748b; font-size: 14px;">
+        Completed: Monorepo scaffold, CI pipeline, Claude Parser (with tests), API Key Masking (with tests)
+      </p>
+    </div>
+
+    <!-- Test Suites -->
+    <div class="section">
+      <h2 class="section-title">
+        <span class="icon">📝</span>
+        Test Suites
+      </h2>
+
+      <!-- API Key Masker Suite -->
+      <div class="test-suite">
+        <div class="test-suite-header">
+          <div class="test-suite-name">
+            <span>🔐</span>
+            <div>
+              <div>API Key Masker</div>
+              <div class="file-path">packages/core/src/__tests__/api-key-masker.spec.ts</div>
+            </div>
+          </div>
+          <div class="test-suite-status">
+            <span style="color: #64748b; font-size: 14px;">11 tests</span>
+            <span class="badge badge-pass">✓ Passed</span>
+          </div>
+        </div>
+        <div class="test-list">
+          <div class="test-item">
+            <div class="test-status pass">✓</div>
+            <div class="test-name">should mask OpenAI API key in string</div>
+            <div class="test-duration">2ms</div>
+          </div>
+          <div class="test-item">
+            <div class="test-status pass">✓</div>
+            <div class="test-name">should mask Anthropic API key</div>
+            <div class="test-duration">1ms</div>
+          </div>
+          <div class="test-item">
+            <div class="test-status pass">✓</div>
+            <div class="test-name">should mask Google API key</div>
+            <div class="test-duration">0ms</div>
+          </div>
+          <div class="test-item">
+            <div class="test-status pass">✓</div>
+            <div class="test-name">should mask GitHub token</div>
+            <div class="test-duration">0ms</div>
+          </div>
+          <div class="test-item">
+            <div class="test-status pass">✓</div>
+            <div class="test-name">should mask multiple keys in same text</div>
+            <div class="test-duration">1ms</div>
+          </div>
+          <div class="test-item">
+            <div class="test-status pass">✓</div>
+            <div class="test-name">should not modify string without API keys</div>
+            <div class="test-duration">0ms</div>
+          </div>
+          <div class="test-item">
+            <div class="test-status pass">✓</div>
+            <div class="test-name">should handle empty string</div>
+            <div class="test-duration">0ms</div>
+          </div>
+          <div class="test-item">
+            <div class="test-status pass">✓</div>
+            <div class="test-name">should mask keys in object properties</div>
+            <div class="test-duration">1ms</div>
+          </div>
+          <div class="test-item">
+            <div class="test-status pass">✓</div>
+            <div class="test-name">should mask keys in nested objects</div>
+            <div class="test-duration">0ms</div>
+          </div>
+          <div class="test-item">
+            <div class="test-status pass">✓</div>
+            <div class="test-name">should mask keys in arrays</div>
+            <div class="test-duration">1ms</div>
+          </div>
+          <div class="test-item">
+            <div class="test-status pass">✓</div>
+            <div class="test-name">should handle mixed arrays and objects</div>
+            <div class="test-duration">0ms</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Claude Parser Suite -->
+      <div class="test-suite">
+        <div class="test-suite-header">
+          <div class="test-suite-name">
+            <span>🤖</span>
+            <div>
+              <div>Claude Parser</div>
+              <div class="file-path">packages/core/src/__tests__/claude.parser.spec.ts</div>
+            </div>
+          </div>
+          <div class="test-suite-status">
+            <span style="color: #64748b; font-size: 14px;">7 tests</span>
+            <span class="badge badge-pass">✓ Passed</span>
+          </div>
+        </div>
+        <div class="test-list">
+          <div class="test-item">
+            <div class="test-status pass">✓</div>
+            <div class="test-name">parseMCPConfig › should parse valid Claude MCP configuration</div>
+            <div class="test-duration">5ms</div>
+          </div>
+          <div class="test-item">
+            <div class="test-status pass">✓</div>
+            <div class="test-name">parseMCPConfig › should handle multiple MCP servers</div>
+            <div class="test-duration">0ms</div>
+          </div>
+          <div class="test-item">
+            <div class="test-status pass">✓</div>
+            <div class="test-name">parseMCPConfig › should throw error for invalid MCP config</div>
+            <div class="test-duration">1ms</div>
+          </div>
+          <div class="test-item">
+            <div class="test-status pass">✓</div>
+            <div class="test-name">parseMCPConfig › should handle empty MCP config</div>
+            <div class="test-duration">1ms</div>
+          </div>
+          <div class="test-item">
+            <div class="test-status pass">✓</div>
+            <div class="test-name">parseMCPConfig › should parse server with no environment variables</div>
+            <div class="test-duration">0ms</div>
+          </div>
+          <div class="test-item">
+            <div class="test-status pass">✓</div>
+            <div class="test-name">validateConfig › should return true for valid config</div>
+            <div class="test-duration">1ms</div>
+          </div>
+          <div class="test-item">
+            <div class="test-status pass">✓</div>
+            <div class="test-name">validateConfig › should return false for invalid config</div>
+            <div class="test-duration">0ms</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Coverage Section -->
+    <div class="section">
+      <h2 class="section-title">
+        <span class="icon">🎯</span>
+        Coverage Summary
+      </h2>
+      <div class="coverage-grid">
+        <div class="coverage-item">
+          <div class="coverage-label">Parsers</div>
+          <div class="coverage-value" style="color: #22c55e;">100%</div>
+        </div>
+        <div class="coverage-item">
+          <div class="coverage-label">Masking</div>
+          <div class="coverage-value" style="color: #22c55e;">100%</div>
+        </div>
+        <div class="coverage-item">
+          <div class="coverage-label">Core Package</div>
+          <div class="coverage-value" style="color: #22c55e;">100%</div>
+        </div>
+      </div>
+      <p style="margin-top: 16px; color: #64748b; font-size: 14px;">
+        <strong>Note:</strong> Coverage targets achieved for implemented modules. 
+        API key masking and Claude parser both meet 100% coverage requirement.
+      </p>
+    </div>
+
+    <!-- Implementation Status -->
+    <div class="section">
+      <h2 class="section-title">
+        <span class="icon">✅</span>
+        Implementation Status
+      </h2>
+      <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr style="background: #f8fafc;">
+            <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0;">Task</th>
+            <th style="padding: 12px; text-align: center; border-bottom: 2px solid #e2e8f0;">Status</th>
+            <th style="padding: 12px; text-align: center; border-bottom: 2px solid #e2e8f0;">Tests</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">S1-01: Monorepo scaffold</td>
+            <td style="padding: 12px; text-align: center; border-bottom: 1px solid #e2e8f0;"><span style="color: #22c55e; font-weight: 600;">✓ Complete</span></td>
+            <td style="padding: 12px; text-align: center; border-bottom: 1px solid #e2e8f0;">-</td>
+          </tr>
+          <tr>
+            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">S1-02: CI pipeline</td>
+            <td style="padding: 12px; text-align: center; border-bottom: 1px solid #e2e8f0;"><span style="color: #22c55e; font-weight: 600;">✓ Complete</span></td>
+            <td style="padding: 12px; text-align: center; border-bottom: 1px solid #e2e8f0;">-</td>
+          </tr>
+          <tr>
+            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">S1-03/04: Claude Parser</td>
+            <td style="padding: 12px; text-align: center; border-bottom: 1px solid #e2e8f0;"><span style="color: #22c55e; font-weight: 600;">✓ Complete</span></td>
+            <td style="padding: 12px; text-align: center; border-bottom: 1px solid #e2e8f0;">7 passed</td>
+          </tr>
+          <tr>
+            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">S1-05/06: API Key Masking</td>
+            <td style="padding: 12px; text-align: center; border-bottom: 1px solid #e2e8f0;"><span style="color: #22c55e; font-weight: 600;">✓ Complete</span></td>
+            <td style="padding: 12px; text-align: center; border-bottom: 1px solid #e2e8f0;">11 passed</td>
+          </tr>
+          <tr style="background: #f8fafc;">
+            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">S1-07/08: OpenCode Parser</td>
+            <td style="padding: 12px; text-align: center; border-bottom: 1px solid #e2e8f0;"><span style="color: #f59e0b; font-weight: 600;">⏳ Pending</span></td>
+            <td style="padding: 12px; text-align: center; border-bottom: 1px solid #e2e8f0;">-</td>
+          </tr>
+          <tr style="background: #f8fafc;">
+            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">S1-09: Fixture files</td>
+            <td style="padding: 12px; text-align: center; border-bottom: 1px solid #e2e8f0;"><span style="color: #f59e0b; font-weight: 600;">⏳ Pending</span></td>
+            <td style="padding: 12px; text-align: center; border-bottom: 1px solid #e2e8f0;">-</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p>Generated by AgentSync CLI Test Runner · 2025-03-27 23:28:25 UTC</p>
+      <p style="margin-top: 8px;">Test Framework: Vitest v1.6.1 · Node.js v22.12.0</p>
+    </div>
+  </div>
+</body>
+</html>

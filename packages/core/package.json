@@ -1,0 +1,44 @@
+{
+  "name": "@agent-sync/core",
+  "version": "1.0.0",
+  "description": "Core transformation logic for AgentSync CLI - parsers, translators, and migration utilities",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "keywords": [
+    "claude",
+    "opencode",
+    "cursor",
+    "gemini",
+    "mcp",
+    "ai-agent"
+  ],
+  "author": "AgentSync",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/agentsync/cli"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest --testPathPattern=core"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.3",
+    "vitest": "^1.1.0"
+  }
+}

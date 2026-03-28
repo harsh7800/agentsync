@@ -1,0 +1,43 @@
+{
+  "name": "@agent-sync/schemas",
+  "version": "1.0.0",
+  "description": "Versioned JSON schemas for AI agent tools - Claude, Gemini, OpenCode, Cursor, and more",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "keywords": [
+    "claude",
+    "opencode",
+    "cursor",
+    "gemini",
+    "mcp",
+    "json-schema"
+  ],
+  "author": "AgentSync",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/agentsync/cli"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/json-schema": "^7.0.15",
+    "typescript": "^5.3.3"
+  }
+}

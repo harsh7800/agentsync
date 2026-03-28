@@ -1,0 +1,54 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/home/user/projects"],
+      "env": {}
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_TOKEN": "ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      }
+    },
+    "postgres": {
+      "command": "docker",
+      "args": ["run", "-i", "--rm", "postgres-mcp-server"],
+      "env": {
+        "DATABASE_URL": "postgresql://localhost:5432/mydb"
+      }
+    }
+  },
+  "agents": {
+    "code-reviewer": {
+      "name": "Code Reviewer",
+      "description": "Reviews code for best practices, bugs, and improvements",
+      "system_prompt": "You are an expert code reviewer. Analyze the provided code for: 1) Bugs and logical errors, 2) Security vulnerabilities, 3) Performance issues, 4) Code style violations, 5) Missing documentation. Provide specific, actionable feedback with code examples where applicable.",
+      "tools": ["filesystem", "github"]
+    },
+    "test-writer": {
+      "name": "Test Writer",
+      "description": "Writes comprehensive unit tests for code",
+      "system_prompt": "You are a testing expert. Write comprehensive unit tests for the provided code. Cover: 1) Happy path scenarios, 2) Edge cases, 3) Error conditions, 4) Boundary values. Use descriptive test names and arrange-act-assert pattern.",
+      "tools": ["filesystem"]
+    },
+    "documentation-helper": {
+      "name": "Documentation Helper",
+      "description": "Helps write and improve documentation",
+      "system_prompt": "You are a technical writing expert. Help improve documentation by: 1) Clarifying confusing sections, 2) Adding missing context, 3) Fixing grammar and style, 4) Suggesting better examples. Maintain the existing tone and style of the document."
+    }
+  },
+  "context": {
+    "include": [
+      ".cursorrules",
+      "README.md",
+      "CONTRIBUTING.md"
+    ],
+    "exclude": [
+      "node_modules",
+      "dist",
+      ".git"
+    ]
+  }
+}

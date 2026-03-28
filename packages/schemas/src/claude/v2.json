@@ -1,0 +1,115 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://agentsync.io/schemas/claude/v2.json",
+  "title": "Claude Code Configuration Schema v2",
+  "description": "Extended schema for Claude Code configuration with additional features",
+  "type": "object",
+  "properties": {
+    "mcpServers": {
+      "type": "object",
+      "description": "MCP server configurations",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "type": "string",
+            "description": "Command to run the MCP server"
+          },
+          "args": {
+            "type": "array",
+            "description": "Arguments to pass to the command",
+            "items": {
+              "type": "string"
+            }
+          },
+          "env": {
+            "type": "object",
+            "description": "Environment variables for the MCP server",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "disabled": {
+            "type": "boolean",
+            "description": "Whether the MCP server is disabled",
+            "default": false
+          },
+          "timeout": {
+            "type": "number",
+            "description": "Timeout in milliseconds for MCP server operations",
+            "default": 60000
+          }
+        },
+        "required": ["command"],
+        "additionalProperties": false
+      }
+    },
+    "agents": {
+      "type": "object",
+      "description": "Custom agent definitions",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Display name for the agent"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the agent's purpose"
+          },
+          "system_prompt": {
+            "type": "string",
+            "description": "System prompt for the agent"
+          },
+          "tools": {
+            "type": "array",
+            "description": "Tools available to the agent",
+            "items": {
+              "type": "string"
+            }
+          },
+          "model": {
+            "type": "string",
+            "description": "Model to use for this agent",
+            "enum": ["claude-3-opus-20240229", "claude-3-sonnet-20240229", "claude-3-haiku-20240307"]
+          },
+          "max_tokens": {
+            "type": "number",
+            "description": "Maximum tokens for agent responses",
+            "minimum": 1,
+            "maximum": 4096
+          }
+        },
+        "required": ["description"],
+        "additionalProperties": false
+      }
+    },
+    "customInstructions": {
+      "type": "array",
+      "description": "Global custom instructions for Claude",
+      "items": {
+        "type": "string"
+      }
+    },
+    "settings": {
+      "type": "object",
+      "description": "Claude Code settings",
+      "properties": {
+        "autoUpdate": {
+          "type": "boolean",
+          "description": "Automatically update Claude Code",
+          "default": true
+        },
+        "theme": {
+          "type": "string",
+          "description": "UI theme",
+          "enum": ["light", "dark", "system"],
+          "default": "system"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": true
+}

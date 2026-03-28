@@ -1,0 +1,50 @@
+import type { JSONSchema7 } from 'json-schema';
+
+export const opencodeV1: JSONSchema7 = {
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://agentsync.io/schemas/opencode/v1.json",
+  "title": "OpenCode Configuration Schema v1",
+  "description": "Schema for OpenCode configuration files",
+  "type": "object",
+  "properties": {
+    "mcpServers": {
+      "type": "array",
+      "description": "MCP server configurations",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "description": "Unique name for the MCP server" },
+          "command": { "type": "string", "description": "Command to run the MCP server" },
+          "args": { "type": "array", "description": "Arguments to pass to the command", "items": { "type": "string" } },
+          "env": { "type": "object", "description": "Environment variables for the MCP server", "additionalProperties": { "type": "string" } }
+        },
+        "required": ["name", "command"],
+        "additionalProperties": false
+      }
+    },
+    "agents": {
+      "type": "array",
+      "description": "Agent definitions",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "description": "Unique name for the agent" },
+          "description": { "type": "string", "description": "Description of the agent's purpose" },
+          "system_prompt": { "type": "string", "description": "System prompt for the agent" },
+          "tools": { "type": "array", "description": "Tools available to the agent", "items": { "type": "string" } }
+        },
+        "required": ["name", "description"],
+        "additionalProperties": false
+      }
+    },
+    "settings": {
+      "type": "object",
+      "description": "OpenCode settings",
+      "properties": {
+        "defaultAgent": { "type": "string", "description": "Default agent to use" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": true
+};

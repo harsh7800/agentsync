@@ -1,0 +1,29 @@
+import type { JSONSchema7 } from 'json-schema';
+
+export const geminiV1: JSONSchema7 = {
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://agentsync.io/schemas/gemini/v1.json",
+  "title": "Gemini CLI Configuration Schema v1",
+  "description": "Schema for Gemini CLI configuration files",
+  "type": "object",
+  "properties": {
+    "mcpServers": {
+      "type": "object",
+      "description": "MCP server configurations",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "command": { "type": "string", "description": "Command to run the MCP server" },
+          "args": { "type": "array", "description": "Arguments to pass to the command", "items": { "type": "string" } },
+          "env": { "type": "object", "description": "Environment variables for the MCP server", "additionalProperties": { "type": "string" } }
+        },
+        "required": ["command"],
+        "additionalProperties": false
+      }
+    },
+    "apiKey": { "type": "string", "description": "Gemini API key" },
+    "model": { "type": "string", "description": "Default model to use", "default": "gemini-pro" },
+    "systemInstruction": { "type": "string", "description": "System instruction for Gemini" }
+  },
+  "additionalProperties": true
+};
