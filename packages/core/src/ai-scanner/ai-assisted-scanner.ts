@@ -111,6 +111,18 @@ export class AIAssistedScanner {
       }
     }
 
+    // Debug: Log agent state after enhancement
+    if (process.env.DEBUG_SCANNER) {
+      console.log('[AI-AssistedScanner] Enhancement summary:', {
+        totalAgents: allAgents.length,
+        aiAnalysisPerformed,
+        prioritizeByRelevance: options.prioritizeByRelevance,
+        analyzeComplexity: options.analyzeComplexity,
+        agentsWithRelevanceScore: allAgents.filter(a => a.relevanceScore !== undefined).length,
+        agentsWithComplexity: allAgents.filter(a => a.complexity !== undefined).length,
+      });
+    }
+
     // Build enhanced result
     const result: AIAssistedScanResult = {
       agents: this.categorizer.categorize(allAgents),
@@ -209,7 +221,14 @@ export class AIAssistedScanner {
         complexity,
         lineCount: lines
       };
-    } catch {
+    } catch (error) {
+      // Debug logging for CI
+      if (process.env.DEBUG_SCANNER) {
+        console.error('[AI-AssistedScanner] Error calculating complexity:', {
+          agentPath: agent.path,
+          error: error instanceof Error ? error.message : error
+        });
+      }
       agent.complexity = 'low';
       agent.metadata = { ...agent.metadata, complexity: 'low' };
     }
@@ -219,39 +238,52 @@ export class AIAssistedScanner {
    * Calculate relevance score for prioritization
    */
   private async calculateRelevanceScore(agent: DetectedAgent): Promise<void> {
-    let score = 50; // Base score
+    try {
+      let score = 50; // Base score
 
-    // Higher score for recently modified
-    const daysSinceModified = (Date.now() - agent.lastModified.getTime()) / (1000 * 60 * 60 * 24);
-    if (daysSinceModified < 7) {
-      score += 20;
-    } else if (daysSinceModified < 30) {
-      score += 10;
+      // Higher score for recently modified
+      const daysSinceModified = (Date.now() - agent.lastModified.getTime()) / (1000 * 60 * 60 * 24);
+      if (daysSinceModified < 7) {
+        score += 20;
+      } else if (daysSinceModified < 30) {
+        score += 10;
+      }
+
+      // Higher score for larger files (more content)
+      if (agent.size > 10000) {
+        score += 15;
+      } else if (agent.size > 1000) {
+        score += 10;
+      }
+
+      // Higher score for config files
+      if (agent.type === 'config') {
+        score += 10;
+      }
+
+      // Higher score for local agents (vs system)
+      if (agent.category === 'local') {
+        score += 5;
+      }
+
+      // Set relevanceScore directly on agent (for test compatibility)
+      agent.relevanceScore = Math.min(100, score);
+      agent.metadata = {
+        ...agent.metadata,
+        relevanceScore: Math.min(100, score)
+      };
+    } catch (error) {
+      // Debug logging for CI
+      if (process.env.DEBUG_SCANNER) {
+        console.error('[AI-AssistedScanner] Error calculating relevance score:', {
+          agentPath: agent.path,
+          error: error instanceof Error ? error.message : error,
+          lastModified: agent.lastModified,
+          size: agent.size
+        });
+      }
+      agent.relevanceScore = 50; // Default fallback
     }
-
-    // Higher score for larger files (more content)
-    if (agent.size > 10000) {
-      score += 15;
-    } else if (agent.size > 1000) {
-      score += 10;
-    }
-
-    // Higher score for config files
-    if (agent.type === 'config') {
-      score += 10;
-    }
-
-    // Higher score for local agents (vs system)
-    if (agent.category === 'local') {
-      score += 5;
-    }
-
-    // Set relevanceScore directly on agent (for test compatibility)
-    agent.relevanceScore = Math.min(100, score);
-    agent.metadata = {
-      ...agent.metadata,
-      relevanceScore: Math.min(100, score)
-    };
   }
 
   /**
