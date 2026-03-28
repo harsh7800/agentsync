@@ -111,16 +111,24 @@ export class AIAssistedScanner {
       }
     }
 
-    // Debug: Log agent state after enhancement
-    if (process.env.DEBUG_SCANNER) {
-      console.log('[AI-AssistedScanner] Enhancement summary:', {
-        totalAgents: allAgents.length,
-        aiAnalysisPerformed,
-        prioritizeByRelevance: options.prioritizeByRelevance,
-        analyzeComplexity: options.analyzeComplexity,
-        agentsWithRelevanceScore: allAgents.filter(a => a.relevanceScore !== undefined).length,
-        agentsWithComplexity: allAgents.filter(a => a.complexity !== undefined).length,
-      });
+    // Debug: Log agent state after enhancement (only if scores are missing)
+    if (aiAnalysisPerformed && options.prioritizeByRelevance && allAgents.length > 0) {
+      const hasMissingScores = allAgents.some(a => a.relevanceScore === undefined);
+      if (hasMissingScores) {
+        console.log('[AI-AssistedScanner] DEBUG: Agents found but relevanceScore missing:', {
+          totalAgents: allAgents.length,
+          options: { scope: options.scope, prioritizeByRelevance: options.prioritizeByRelevance },
+          agents: allAgents.slice(0, 2).map(a => ({
+            name: a.name,
+            path: a.path,
+            category: a.category,
+            relevanceScore: a.relevanceScore,
+            complexity: a.complexity,
+            size: a.size,
+            lastModified: a.lastModified
+          }))
+        });
+      }
     }
 
     // Build enhanced result
