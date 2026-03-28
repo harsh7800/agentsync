@@ -33,4 +33,6 @@ Thumbs.db
 
 # Temporary files
 *.tmp
-*.temp
+*.tempact.exe
+act.zip
+act_Windows_x86_64.zip
