@@ -1,5 +1,5 @@
 {
-  "name": "@agentsync/e2e",
+  "name": "@agent-sync/e2e",
   "version": "1.0.0",
   "description": "End-to-end tests for AgentSync CLI",
   "private": true,
@@ -7,8 +7,8 @@
     "test": "vitest --testPathPattern=e2e"
   },
   "dependencies": {
-    "@agentsync/cli": "workspace:*",
-    "@agentsync/core": "workspace:*"
+    "@agent-sync/cli": "workspace:*",
+    "@agent-sync/core": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",

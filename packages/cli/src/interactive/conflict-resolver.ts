@@ -1,10 +1,10 @@
-import { ConflictResolver } from '@agentsync/core';
+import { ConflictResolver } from '@agent-sync/core';
 import type { 
   MappingConflict, 
   ConflictResolution, 
   FieldMapping,
   ResolutionStrategy 
-} from '@agentsync/core';
+} from '@agent-sync/core';
 
 interface ResolutionOption {
   action: string;

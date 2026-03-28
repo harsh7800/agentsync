@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { InteractiveConflictResolver } from '../interactive/conflict-resolver.js';
-import type { MappingConflict, ConflictResolution, FieldMapping } from '@agentsync/core';
+import type { MappingConflict, ConflictResolution, FieldMapping } from '@agent-sync/core';
 
 describe('S3-11: Conflict Resolution Strategies', () => {
   let resolver: InteractiveConflictResolver;

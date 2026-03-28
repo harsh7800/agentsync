@@ -2,7 +2,7 @@ import type {
   FieldMappingSuggestion, 
   MappingAnalysis,
   FieldComparison 
-} from '@agentsync/core';
+} from '@agent-sync/core';
 
 interface PromptConfig {
   type: 'confirm' | 'select' | 'expand' | 'input';

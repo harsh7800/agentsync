@@ -2,9 +2,9 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import * as path from 'path';
 import * as os from 'os';
-import { MigrationService } from '@agentsync/core';
-import { toolPathRegistry } from '@agentsync/core';
-import type { ToolName } from '@agentsync/core';
+import { MigrationService } from '@agent-sync/core';
+import { toolPathRegistry } from '@agent-sync/core';
+import type { ToolName } from '@agent-sync/core';
 import { MigrationSummary, Section, Spinner } from '../ui/index.js';
 
 const VALID_TOOLS: ToolName[] = ['claude', 'opencode', 'gemini', 'cursor', 'copilot'];

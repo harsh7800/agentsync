@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { InteractiveMappingPrompts } from '../interactive/mapping-prompts.js';
-import type { FieldMappingSuggestion, MappingAnalysis } from '@agentsync/core';
+import type { FieldMappingSuggestion, MappingAnalysis } from '@agent-sync/core';
 
 describe('S3-13: Interactive AI-Assisted Mapping Prompts', () => {
   let prompts: InteractiveMappingPrompts;

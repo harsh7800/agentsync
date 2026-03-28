@@ -5,7 +5,7 @@ import { createMigrateCommand } from './commands/migrate.js';
 import { createInteractiveCommand } from './commands/interactive.js';
 import { createScanCommand } from './commands/scan.js';
 import { Banner, Colors } from './ui/index.js';
-import { FileOperations } from '@agentsync/core';
+import { FileOperations } from '@agent-sync/core';
 import * as path from 'path';
 import * as os from 'os';
 

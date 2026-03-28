@@ -1,6 +1,6 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
-import { AIAssistedScanner, ManualScanController } from '@agentsync/core';
+import { AIAssistedScanner, ManualScanController } from '@agent-sync/core';
 import { Banner, Spinner, Colors } from '../ui/index.js';
 import inquirer from 'inquirer';
 

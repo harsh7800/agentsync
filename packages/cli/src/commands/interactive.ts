@@ -1,8 +1,8 @@
 import { Command } from 'commander';
 import inquirer from 'inquirer';
 import chalk from 'chalk';
-import { toolPathRegistry, MigrationService } from '@agentsync/core';
-import type { ToolName } from '@agentsync/core';
+import { toolPathRegistry, MigrationService } from '@agent-sync/core';
+import type { ToolName } from '@agent-sync/core';
 import { Banner, Colors, MigrationSummary, Section } from '../ui/index.js';
 import { createMigrateCommand } from './migrate.js';
 import * as path from 'path';

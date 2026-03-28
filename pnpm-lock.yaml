@@ -32,11 +32,11 @@ importers:
 
   packages/cli:
     dependencies:
-      '@agentsync/core':
-        specifier: workspace:*
+      '@agent-sync/core':
+        specifier: '*'
         version: link:../core
-      '@agentsync/schemas':
-        specifier: workspace:*
+      '@agent-sync/schemas':
+        specifier: '*'
         version: link:../schemas
       boxen:
         specifier: ^8.0.1
@@ -96,10 +96,10 @@ importers:
 
   packages/e2e:
     dependencies:
-      '@agentsync/cli':
+      '@agent-sync/cli':
         specifier: workspace:*
         version: link:../cli
-      '@agentsync/core':
+      '@agent-sync/core':
         specifier: workspace:*
         version: link:../core
     devDependencies:
