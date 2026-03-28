@@ -34,16 +34,8 @@ jobs:
     - name: Build
       run: pnpm build
     
-    - name: Test with coverage
-      run: pnpm test -- --coverage
-    
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4
-      with:
-        files: ./coverage/lcov.info
-        flags: unittests
-        name: codecov-umbrella
-      continue-on-error: true
+    - name: Test
+      run: pnpm test -- --run
 
   lint:
     name: Lint
