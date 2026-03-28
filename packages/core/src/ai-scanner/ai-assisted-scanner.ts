@@ -96,6 +96,16 @@ export class AIAssistedScanner {
     const aiAnalysisPerformed = !!(options.autoDetect || options.analyzeContent || 
                                options.prioritizeByRelevance || options.analyzeComplexity);
 
+    // Debug: Log initial state for every scan
+    console.log('[AI-AssistedScanner] Initial state:', {
+      basePath,
+      baseFilesScanned: baseResult.filesScanned,
+      localAgents: baseResult.agents.local.length,
+      systemAgents: baseResult.agents.system.length,
+      aiAnalysisPerformed,
+      options: { autoDetect: options.autoDetect, analyzeContent: options.analyzeContent, prioritizeByRelevance: options.prioritizeByRelevance, analyzeComplexity: options.analyzeComplexity }
+    });
+
     // Enhance agents with AI data
     if (aiAnalysisPerformed) {
       for (const agent of allAgents) {
@@ -114,21 +124,11 @@ export class AIAssistedScanner {
     // Debug: Log agent state after enhancement (only if scores are missing)
     if (aiAnalysisPerformed && options.prioritizeByRelevance && allAgents.length > 0) {
       const hasMissingScores = allAgents.some(a => a.relevanceScore === undefined);
-      if (hasMissingScores) {
-        console.log('[AI-AssistedScanner] DEBUG: Agents found but relevanceScore missing:', {
-          totalAgents: allAgents.length,
-          options: { scope: options.scope, prioritizeByRelevance: options.prioritizeByRelevance },
-          agents: allAgents.slice(0, 2).map(a => ({
-            name: a.name,
-            path: a.path,
-            category: a.category,
-            relevanceScore: a.relevanceScore,
-            complexity: a.complexity,
-            size: a.size,
-            lastModified: a.lastModified
-          }))
-        });
-      }
+      console.log('[AI-AssistedScanner] DEBUG: After enhancement:', {
+        totalAgents: allAgents.length,
+        hasMissingScores,
+        scores: allAgents.slice(0, 2).map(a => ({ name: a.name, relevanceScore: a.relevanceScore }))
+      });
     }
 
     // Build enhanced result
