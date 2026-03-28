@@ -3,10 +3,14 @@
   "version": "1.0.0",
   "description": "AI-assisted CLI for migrating AI agent configurations between development tools",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/agent-sync/agentsync"
+  },
   "scripts": {
     "build": "pnpm -r build",
-    "dev": "pnpm --filter @agentsync/cli dev",
-    "start": "pnpm --filter @agentsync/cli start",
+    "dev": "pnpm --filter @agent-sync/cli dev",
+    "start": "pnpm --filter @agent-sync/cli start",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",

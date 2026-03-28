@@ -1,9 +1,36 @@
+# Dependencies
 node_modules/
+
+# Build outputs
 dist/
+*.tsbuildinfo
+
+# Test outputs
+coverage/
+test-reports/
+
+# Logs
 *.log
-.DS_Store
+npm-debug.log*
+
+# Environment files
 .env
 .env.local
-coverage/
+.env.*.local
+
+# IDE
 .vscode/
 .idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# OpenCode (local agent memory)
+.opencode/memory/
+
+# Temporary files
+*.tmp
+*.temp

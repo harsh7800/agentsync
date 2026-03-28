@@ -1,0 +1,26 @@
+{
+  "categories": [
+    {
+      "title": "## 🚀 Features",
+      "labels": ["enhancement", "feature"]
+    },
+    {
+      "title": "## 🐛 Bug Fixes",
+      "labels": ["bug", "fix"]
+    },
+    {
+      "title": "## 📚 Documentation",
+      "labels": ["documentation", "docs"]
+    },
+    {
+      "title": "## 🧪 Testing",
+      "labels": ["test", "testing"]
+    },
+    {
+      "title": "## 🔧 Maintenance",
+      "labels": ["maintenance", "chore", "refactor", "dependencies"]
+    }
+  ],
+  "ignoreLabels": ["ignore"],
+  "template": "# {{ version}} ({{ date }})\n\n{{ body }}\n\n**Full Changelog**: https://github.com/agent-sync/agentsync/compare/{{ previousTag }}...{{ currentTag }}"
+}
