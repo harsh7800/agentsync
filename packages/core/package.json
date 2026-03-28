@@ -33,7 +33,8 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "test": "vitest --testPathPattern=core"
+    "test": "vitest --testPathPattern=core",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {},
   "devDependencies": {

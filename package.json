@@ -15,7 +15,7 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
     "lint": "eslint . --ext .ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "pnpm -r typecheck"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",

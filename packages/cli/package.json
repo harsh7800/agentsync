@@ -35,7 +35,8 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "start": "node dist/index.js",
-    "test": "vitest --testPathPattern=cli"
+    "test": "vitest --testPathPattern=cli",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@agent-sync/core": "*",
