@@ -28,6 +28,12 @@ npm-debug.log*
 .DS_Store
 Thumbs.db
 
+# Git
+.git/
+
+# TypeScript config
+.tsconfig
+
 # OpenCode (local agent memory)
 .opencode/memory/
 
