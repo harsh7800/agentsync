@@ -42,10 +42,10 @@ importers:
   packages/cli:
     dependencies:
       '@agent-sync/core':
-        specifier: 1.0.0
+        specifier: 1.1.0
         version: link:../core
       '@agent-sync/schemas':
-        specifier: 1.0.0
+        specifier: 1.1.0
         version: link:../schemas
       boxen:
         specifier: ^8.0.1
