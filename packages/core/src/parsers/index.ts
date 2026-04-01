@@ -20,6 +20,8 @@ export { OpenCodeConfigParser } from './opencode/parsers/config.parser.js';
 // Common Schema Normalizers & Adapters (NEW)
 export { OpenCodeNormalizer, createOpenCodeNormalizer } from './opencode/normalizer.js';
 export { OpenCodeAdapter, createOpenCodeAdapter } from './opencode/adapter.js';
+export { ClaudeNormalizer, createClaudeNormalizer } from './claude/normalizer.js';
+export { ClaudeAdapter, createClaudeAdapter } from './claude/adapter.js';
 
 // Legacy parsers (for backward compatibility)
 export { ClaudeParser } from './claude.parser.js';
