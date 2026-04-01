@@ -1,6 +1,6 @@
 # AgentSync CLI
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/harsh7800/agentsync)
+[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/harsh7800/agentsync)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 > **AI-assisted terminal environment for managing AI agent configurations**
@@ -22,12 +22,14 @@ AgentSync CLI migrates AI agent environments between Claude Code, Gemini CLI, Cu
 ## Installation
 
 ```bash
-# Install globally
-npm install -g agentsync
+# Install globally (recommended)
+npm install -g @agent-sync/cli
 
-# Or use with npx
-npx agentsync
+# Or use with npx (no install)
+npx @agent-sync/cli
 ```
+
+**Note:** AgentSync CLI is designed to be installed globally. The `-g` flag ensures the `agentsync` command is available system-wide.
 
 ## Quick Start
 
@@ -129,6 +131,15 @@ Goodbye! 👋
 Use traditional CLI commands for scripting and automation:
 
 ```bash
+# Launch modern TUI (recommended)
+agentsync tui
+
+# Check for updates
+agentsync update
+
+# Incremental sync of detected tools
+agentsync sync
+
 # Migrate from one tool to another
 agentsync migrate --from claude --to cursor
 
@@ -145,6 +156,57 @@ agentsync report
 agentsync rollback cursor
 ```
 
+## Workflow
+
+Typical AgentSync workflow from installation to migration:
+
+```bash
+# 1. Install AgentSync globally
+npm install -g @agent-sync/cli
+
+# 2. Launch the modern TUI (recommended)
+agentsync tui
+
+# Or use Agent Mode
+agentsync
+
+# 3. In TUI or Agent Mode:
+#    - Select source tool (e.g., OpenCode)
+#    - Select target tool (Claude Code)
+#    - Choose output location
+#    - Review and confirm migration
+
+# 4. Check for updates periodically
+agentsync update
+```
+
+### TUI Workflow (Recommended)
+
+The modern Terminal UI provides a guided 6-step migration wizard:
+
+1. **Welcome** - Tool detection and quick stats
+2. **Scan** - Select scope and scan for configurations
+3. **Source Selection** - Choose source tool
+4. **Target Selection** - Select target (Claude Code only currently)
+5. **Output Location** - Use FileBrowser to select destination
+6. **Confirmation** - Review summary and execute migration
+
+### Update Notifications
+
+AgentSync automatically checks for updates on startup. When a new version is available, you'll see:
+
+```
+┌─────────────────────────────────────┐
+│  Update available: MINOR            │
+│                                     │
+│  Current: 1.1.0                     │
+│  Latest:  1.2.0                     │
+│                                     │
+│  Run agentsync update or /update    │
+│  to update.                         │
+└─────────────────────────────────────┘
+```
+
 ## Slash Commands
 
 When in Agent Mode, use these slash commands:
@@ -153,9 +215,11 @@ When in Agent Mode, use these slash commands:
 |---------|-------------|---------|
 | `/` or `/help` | Show available commands | `/>` |
 | `/scan` | Scan for agents and tools | `/scan` or `/scan current` |
+| `/sync` | Incremental sync of detected tools | `/sync` |
 | `/migrate` | Start migration workflow | `/migrate` |
 | `/detect` | Detect installed tools | `/detect` |
 | `/status` | Show current session state | `/status` |
+| `/update` | Check for updates | `/update` or `/u` |
 | `/clear` | Clear the screen | `/clear` |
 | `/exit` | Exit Agent Mode | `/exit` or `/quit` |
 
@@ -292,11 +356,21 @@ We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guid
 
 MIT License - see [LICENSE](LICENSE) file for details.
 
-## Support
+## Community & Support
 
-- 📖 [Documentation](docs/)
-- 🐛 [Issue Tracker](https://github.com/harsh7800/agentsync/issues)
-- 💬 [Discussions](https://github.com/harsh7800/agentsync/discussions)
+Join our community for help, discussions, and updates:
+
+- 💬 **Discord Community** - [Join our Discord](https://discord.gg/agentsync) for real-time help and discussions
+- 📖 [Documentation](docs/) - Complete guides and references
+- 🐛 [Issue Tracker](https://github.com/harsh7800/agentsync/issues) - Report bugs and request features
+- 💬 [GitHub Discussions](https://github.com/harsh7800/agentsync/discussions) - Technical discussions
+
+### Discord Channels
+
+- `#general` - General chat and introductions
+- `#help` - Get help with issues and questions
+- `#announcements` - New releases and updates
+- `#showcase` - Share your AgentSync workflows
 
 ---
 
