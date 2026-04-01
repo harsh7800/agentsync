@@ -8,7 +8,7 @@
  */
 
 import type { CommonSchema, CommonAgent, CommonSkill, CommonMCP } from '../../common-schema/types.js';
-import type { ClaudeToolModel, ClaudeMCPServer, ClaudeAgent } from './types.js';
+import type { ClaudeToolModel, ClaudeMCPServer, ClaudeAgent, ClaudeSkill } from './types.js';
 import type { ToolAdapter } from '../../common-schema/normalizer.js';
 import type { ToolName } from '../../registry/tool-paths.registry.js';
 
@@ -33,9 +33,11 @@ export class ClaudeAdapter implements ToolAdapter<ClaudeToolModel> {
       rootPath: '', // Will be set by writer
       mcpServers: [],
       agents: [],
+      skills: [],
       settings: {},
       discovered: {
         agentCount: 0,
+        skillCount: 0,
         mcpServerCount: 0
       }
     };
@@ -54,6 +56,11 @@ export class ClaudeAdapter implements ToolAdapter<ClaudeToolModel> {
       model.agents!.push(this.adaptAgent(agent));
     }
 
+    // Adapt Skills
+    for (const skill of schema.skills) {
+      model.skills!.push(this.adaptSkill(skill));
+    }
+
     // Apply global settings from metadata if present
     if ((schema.metadata as Record<string, unknown>).claudeSettings) {
       const claudeSettings = (schema.metadata as Record<string, unknown>).claudeSettings as Record<string, unknown>;
@@ -63,6 +70,7 @@ export class ClaudeAdapter implements ToolAdapter<ClaudeToolModel> {
     // Update discovered counts
     model.discovered = {
       agentCount: model.agents!.length,
+      skillCount: model.skills!.length,
       mcpServerCount: model.mcpServers!.length
     };
 
@@ -84,6 +92,19 @@ export class ClaudeAdapter implements ToolAdapter<ClaudeToolModel> {
       command: mcp.command || '',
       args: mcp.args || [],
       env: mcp.env
+    };
+  }
+
+  /**
+   * Adapt Common Skill to Claude Skill format
+   */
+  private adaptSkill(skill: CommonSkill): ClaudeSkill {
+    return {
+      name: skill.name,
+      description: skill.description,
+      instructions: skill.instructions,
+      enabled: skill.enabled,
+      content: skill.content || skill.instructions || ''
     };
   }
 

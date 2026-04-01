@@ -68,6 +68,7 @@ export async function migrateClaudeToOpenCodeExample() {
     ],
     discovered: {
       agentCount: 2,
+      skillCount: 0,
       mcpServerCount: 2
     }
   };
@@ -277,7 +278,7 @@ export async function usingMigrationOrchestratorExample() {
     agents: [
       { name: 'Test Agent', description: 'A test agent' }
     ],
-    discovered: { agentCount: 1, mcpServerCount: 0 }
+    discovered: { agentCount: 1, skillCount: 0, mcpServerCount: 0 }
   };
 
   console.log('Migrating Claude → OpenCode using orchestrator...');

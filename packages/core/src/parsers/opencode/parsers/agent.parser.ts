@@ -42,14 +42,23 @@ export class OpenCodeAgentParser {
 
   /**
    * Parse agent.md content and return structured config
+   * 
+   * System prompt priority:
+   * 1. frontmatter system_prompt field (if present)
+   * 2. Content body after frontmatter (the actual markdown content)
+   * 3. frontmatter systemPrompt field (legacy)
    */
   parseContent(content: string): AgentFileResult['config'] {
     const frontmatter = this.parseFrontmatter(content);
     const data = frontmatter.data;
     
     // Handle both camelCase and snake_case keys
-    const systemPrompt = (data.systemPrompt as string) || (data.system_prompt as string);
+    const frontmatterPrompt = (data.system_prompt as string) || (data.systemPrompt as string);
     const description = (data.description as string) || '';
+    
+    // Use frontmatter prompt if provided, otherwise use content body
+    // Content body contains the actual system prompt instructions
+    const systemPrompt = frontmatterPrompt || frontmatter.content.trim() || undefined;
     
     return {
       description,

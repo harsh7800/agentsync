@@ -118,6 +118,9 @@ export class OpenCodeScanner {
 
   /**
    * Scan agents from agents subdirectory
+   * Supports both structures:
+   *   - agents/{name}/agent.md (subdirectory)
+   *   - agents/{name}.md (flat file)
    */
   async scanAgents(basePath: string): Promise<{ agents: OpenCodeAgent[]; errors: string[] }> {
     const agentsDir = path.join(basePath, 'agents');
@@ -133,18 +136,30 @@ export class OpenCodeScanner {
     const entries = await fs.readdir(agentsDir, { withFileTypes: true });
 
     for (const entry of entries) {
-      if (!entry.isDirectory()) continue;
+      const fullPath = path.join(agentsDir, entry.name);
 
-      const agentDir = path.join(agentsDir, entry.name);
-      const agentMdPath = path.join(agentDir, 'agent.md');
-
-      try {
-        const agentFile = await this.agentParser.parse(agentMdPath, entry.name);
-        const agent = this.agentParser.toAgent(agentFile);
-        agents.push(agent);
-      } catch (error) {
-        errors.push(`Failed to parse agent at ${agentMdPath}: ${error}`);
-        console.warn(`Warning: Failed to parse agent at ${agentMdPath}: ${error}`);
+      if (entry.isDirectory()) {
+        // Subdirectory structure: agents/{name}/agent.md
+        const agentMdPath = path.join(fullPath, 'agent.md');
+        try {
+          const agentFile = await this.agentParser.parse(agentMdPath, entry.name);
+          const agent = this.agentParser.toAgent(agentFile);
+          agents.push(agent);
+        } catch (error) {
+          errors.push(`Failed to parse agent at ${agentMdPath}: ${error}`);
+          console.warn(`Warning: Failed to parse agent at ${agentMdPath}: ${error}`);
+        }
+      } else if (entry.name.endsWith('.md')) {
+        // Flat structure: agents/{name}.md
+        const agentName = entry.name.replace('.md', '');
+        try {
+          const agentFile = await this.agentParser.parse(fullPath, agentName);
+          const agent = this.agentParser.toAgent(agentFile);
+          agents.push(agent);
+        } catch (error) {
+          errors.push(`Failed to parse agent at ${fullPath}: ${error}`);
+          console.warn(`Warning: Failed to parse agent at ${fullPath}: ${error}`);
+        }
       }
     }
 
@@ -153,6 +168,9 @@ export class OpenCodeScanner {
 
   /**
    * Scan skills from skills subdirectory
+   * Supports both structures:
+   *   - skills/{name}/skill.md (subdirectory)
+   *   - skills/{name}.md or skills/{name}/SKILL.md (flat file)
    */
   async scanSkills(basePath: string): Promise<{ skills: OpenCodeSkill[]; errors: string[] }> {
     const skillsDir = path.join(basePath, 'skills');
@@ -168,18 +186,39 @@ export class OpenCodeScanner {
     const entries = await fs.readdir(skillsDir, { withFileTypes: true });
 
     for (const entry of entries) {
-      if (!entry.isDirectory()) continue;
+      const fullPath = path.join(skillsDir, entry.name);
 
-      const skillDir = path.join(skillsDir, entry.name);
-      const skillMdPath = path.join(skillDir, 'skill.md');
-
-      try {
-        const skillFile = await this.skillParser.parse(skillMdPath, entry.name);
-        const skill = this.skillParser.toSkill(skillFile);
-        skills.push(skill);
-      } catch (error) {
-        errors.push(`Failed to parse skill at ${skillMdPath}: ${error}`);
-        console.warn(`Warning: Failed to parse skill at ${skillMdPath}: ${error}`);
+      if (entry.isDirectory()) {
+        // Subdirectory structure: skills/{name}/skill.md or SKILL.md
+        const skillMdPath1 = path.join(fullPath, 'skill.md');
+        const skillMdPath2 = path.join(fullPath, 'SKILL.md');
+        
+        try {
+          // Try skill.md first
+          let skillFile;
+          try {
+            skillFile = await this.skillParser.parse(skillMdPath1, entry.name);
+          } catch {
+            // Fall back to SKILL.md
+            skillFile = await this.skillParser.parse(skillMdPath2, entry.name);
+          }
+          const skill = this.skillParser.toSkill(skillFile);
+          skills.push(skill);
+        } catch (error) {
+          errors.push(`Failed to parse skill at ${fullPath}: ${error}`);
+          console.warn(`Warning: Failed to parse skill at ${fullPath}: ${error}`);
+        }
+      } else if (entry.name.endsWith('.md')) {
+        // Flat structure: skills/{name}.md
+        const skillName = entry.name.replace('.md', '');
+        try {
+          const skillFile = await this.skillParser.parse(fullPath, skillName);
+          const skill = this.skillParser.toSkill(skillFile);
+          skills.push(skill);
+        } catch (error) {
+          errors.push(`Failed to parse skill at ${fullPath}: ${error}`);
+          console.warn(`Warning: Failed to parse skill at ${fullPath}: ${error}`);
+        }
       }
     }
 

@@ -38,22 +38,40 @@ const DEFAULT_OPTIONS: Partial<ScanOptions> = {
 };
 
 /**
- * Glob patterns for different file types
+ * Tool detection patterns - scans for ALL available tools
  */
-const PATTERNS = {
-  agents: {
-    project: '**/.opencode/agents/*.md',
-    global: '**/.config/opencode/agents/*.md',
+const TOOL_PATTERNS = {
+  opencode: {
+    name: 'opencode',
+    icon: '🔵',
+    agents: ['**/.opencode/agents/*.md', '**/.config/opencode/agents/*.md'],
+    skills: ['**/.opencode/skills/**/SKILL.md', '**/.config/opencode/skills/**/SKILL.md'],
+    configs: ['**/.opencode/opencode.json', '**/.config/opencode/opencode.json'],
   },
-  skills: {
-    project: '**/.opencode/skills/**/SKILL.md',
-    global: '**/.config/opencode/skills/**/SKILL.md',
+  claude: {
+    name: 'claude',
+    icon: '🟠',
+    agents: ['**/.claude/agents/*.md', '**/.config/claude/agents/*.md'],
+    skills: ['**/.claude/skills/**/SKILL.md', '**/.config/claude/skills/**/SKILL.md'],
+    configs: ['**/.claude/settings.json', '**/.config/claude/settings.json', '**/.mcp.json'],
   },
-  config: {
-    project: '**/.opencode/opencode.json',
-    global: '**/.config/opencode/opencode.json',
+  cursor: {
+    name: 'cursor',
+    icon: '🟢',
+    agents: ['**/.cursor/agents/*.md', '**/.config/cursor/agents/*.md'],
+    skills: ['**/.cursor/skills/**/SKILL.md', '**/.config/cursor/skills/**/SKILL.md'],
+    configs: ['**/.cursor/settings.json', '**/.config/cursor/settings.json'],
   },
-};
+  gemini: {
+    name: 'gemini',
+    icon: '🟣',
+    agents: ['**/.gemini/agents/*.md', '**/.config/gemini/agents/*.md'],
+    skills: ['**/.gemini/skills/**/SKILL.md', '**/.config/gemini/skills/**/SKILL.md'],
+    configs: ['**/.gemini/config.json', '**/.config/gemini/config.json'],
+  },
+} as const;
+
+type ToolName = keyof typeof TOOL_PATTERNS;
 
 /**
  * AI Directory Scanner class
@@ -179,32 +197,38 @@ export class AIDirectoryScanner {
   }
 
   /**
-   * Scan agents in a directory
+   * Scan agents for ALL tools in a directory
    */
   async scanAgents(
     basePath: string,
     options: { scope: 'project' | 'global' }
   ): Promise<DetectedFile[]> {
-    const pattern =
-      options.scope === 'project'
-        ? PATTERNS.agents.project
-        : PATTERNS.agents.global;
-
-    const files = await this.globScan(pattern, basePath);
     const detectedFiles: DetectedFile[] = [];
 
-    for (const filePath of files) {
-      try {
-        const file = await this.createDetectedFile(
-          filePath,
-          'agent',
-          options.scope
-        );
-        if (file) {
-          detectedFiles.push(file);
+    // Scan agents for each tool
+    for (const [toolName, toolConfig] of Object.entries(TOOL_PATTERNS)) {
+      const patterns = options.scope === 'project' 
+        ? [toolConfig.agents[0]] 
+        : toolConfig.agents;
+
+      for (const pattern of patterns) {
+        const files = await this.globScan(pattern, basePath);
+
+        for (const filePath of files) {
+          try {
+            const file = await this.createDetectedFile(
+              filePath,
+              'agent',
+              options.scope,
+              toolName
+            );
+            if (file) {
+              detectedFiles.push(file);
+            }
+          } catch {
+            // Skip invalid files
+          }
         }
-      } catch {
-        // Skip invalid files
       }
     }
 
@@ -212,32 +236,38 @@ export class AIDirectoryScanner {
   }
 
   /**
-   * Scan skills in a directory
+   * Scan skills for ALL tools in a directory
    */
   async scanSkills(
     basePath: string,
     options: { scope: 'project' | 'global' }
   ): Promise<DetectedFile[]> {
-    const pattern =
-      options.scope === 'project'
-        ? PATTERNS.skills.project
-        : PATTERNS.skills.global;
-
-    const files = await this.globScan(pattern, basePath);
     const detectedFiles: DetectedFile[] = [];
 
-    for (const filePath of files) {
-      try {
-        const file = await this.createDetectedFile(
-          filePath,
-          'skill',
-          options.scope
-        );
-        if (file) {
-          detectedFiles.push(file);
+    // Scan skills for each tool
+    for (const [toolName, toolConfig] of Object.entries(TOOL_PATTERNS)) {
+      const patterns = options.scope === 'project' 
+        ? [toolConfig.skills[0]] 
+        : toolConfig.skills;
+
+      for (const pattern of patterns) {
+        const files = await this.globScan(pattern, basePath);
+
+        for (const filePath of files) {
+          try {
+            const file = await this.createDetectedFile(
+              filePath,
+              'skill',
+              options.scope,
+              toolName
+            );
+            if (file) {
+              detectedFiles.push(file);
+            }
+          } catch {
+            // Skip invalid files
+          }
         }
-      } catch {
-        // Skip invalid files
       }
     }
 
@@ -245,30 +275,27 @@ export class AIDirectoryScanner {
   }
 
   /**
-   * Scan config files
+   * Scan config files for ALL tools
    */
   async scanConfigs(basePath: string): Promise<DetectedFile[]> {
-    const projectFiles = await this.globScan(
-      PATTERNS.config.project,
-      basePath
-    );
-    const globalFiles = await this.globScan(
-      PATTERNS.config.global,
-      basePath
-    );
-    const allFiles = [...projectFiles, ...globalFiles];
-
     const detectedFiles: DetectedFile[] = [];
 
-    for (const filePath of allFiles) {
-      try {
-        const scope = this.categorizeByScope(filePath);
-        const file = await this.createDetectedFile(filePath, 'config', scope);
-        if (file) {
-          detectedFiles.push(file);
+    // Scan configs for each tool
+    for (const [toolName, toolConfig] of Object.entries(TOOL_PATTERNS)) {
+      for (const pattern of toolConfig.configs) {
+        const files = await this.globScan(pattern, basePath);
+
+        for (const filePath of files) {
+          try {
+            const scope = this.categorizeByScope(filePath);
+            const file = await this.createDetectedFile(filePath, 'config', scope, toolName);
+            if (file) {
+              detectedFiles.push(file);
+            }
+          } catch {
+            // Skip invalid files
+          }
         }
-      } catch {
-        // Skip invalid files
       }
     }
 
@@ -522,7 +549,8 @@ export class AIDirectoryScanner {
   private async createDetectedFile(
     filePath: string,
     type: FileType,
-    scope: 'project' | 'global'
+    scope: 'project' | 'global',
+    toolName?: string
   ): Promise<DetectedFile | null> {
     try {
       const stats = await stat(filePath);
@@ -551,12 +579,16 @@ export class AIDirectoryScanner {
         metadata = { name: skillName };
       }
 
+      // Detect tool from path if not provided
+      const detectedTool = toolName || this.detectToolFromPath(filePath);
+
       return {
         id: this.generateFileId(filePath),
         path: filePath,
         name: basename(filePath),
         type,
         scope,
+        tool: detectedTool,
         size: stats.size,
         lastModified: stats.mtime,
         metadata,
@@ -564,6 +596,18 @@ export class AIDirectoryScanner {
     } catch {
       return null;
     }
+  }
+
+  /**
+   * Detect tool name from file path
+   */
+  private detectToolFromPath(filePath: string): string {
+    if (filePath.includes('.opencode') || filePath.includes('/opencode/')) return 'opencode';
+    if (filePath.includes('.claude') || filePath.includes('/claude/')) return 'claude';
+    if (filePath.includes('.cursor') || filePath.includes('/cursor/')) return 'cursor';
+    if (filePath.includes('.gemini') || filePath.includes('/gemini/')) return 'gemini';
+    if (filePath.includes('.mcp.json')) return 'claude';
+    return 'unknown';
   }
 
   /**

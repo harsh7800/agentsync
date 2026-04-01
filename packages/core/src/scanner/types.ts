@@ -65,6 +65,8 @@ export interface DetectedFile {
   type: FileType;
   /** Scope - project or global */
   scope: 'project' | 'global';
+  /** Tool name (opencode, claude, cursor, etc.) */
+  tool?: string;
   /** File size in bytes */
   size: number;
   /** Last modified date */
