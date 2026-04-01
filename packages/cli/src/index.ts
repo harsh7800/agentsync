@@ -13,6 +13,15 @@ import * as os from 'os';
 export { InteractiveConflictResolver } from './interactive/conflict-resolver.js';
 export { InteractiveMappingPrompts } from './interactive/mapping-prompts.js';
 
+// Export Agent Mode components
+export { AgentLoop } from './interactive/agent-loop.js';
+export { CommandRegistry } from './interactive/command-registry.js';
+export { SessionStateManager, createSessionState } from './interactive/session-state.js';
+export { scanHandler } from './interactive/commands/scan.js';
+export { statusHandler } from './interactive/commands/status.js';
+export { helpHandler } from './interactive/commands/help.js';
+export { exitHandler } from './interactive/commands/exit.js';
+
 const program = new Command();
 
 // Check if interactive mode should be launched
@@ -142,13 +151,65 @@ program.on('--help', () => {
   Banner.showMinimal();
 });
 
-// If no args provided, launch interactive mode
+// Import types for Agent Mode
+import type { SlashCommand } from './interactive/types.js';
+
+// If no args provided, launch Agent Mode (REPL with slash commands)
 if (noArgsProvided) {
   setTimeout(async () => {
-    const interactiveCmd = createInteractiveCommand();
-    const interactiveProgram = new Command();
-    interactiveProgram.addCommand(interactiveCmd);
-    await interactiveProgram.parseAsync(['node', 'agentsync', 'interactive']);
+    const { AgentLoop } = await import('./interactive/agent-loop.js');
+    const { scanHandler } = await import('./interactive/commands/scan.js');
+    const { statusHandler } = await import('./interactive/commands/status.js');
+    const { helpHandler } = await import('./interactive/commands/help.js');
+    const { exitHandler } = await import('./interactive/commands/exit.js');
+
+    // Create Agent Loop instance
+    const agentLoop = new AgentLoop();
+
+    // Register slash commands
+    const scanCommand: SlashCommand = {
+      name: 'scan',
+      description: 'Scan for agents and tools',
+      usage: '/scan [current|system|custom]',
+      execute: scanHandler
+    };
+
+    const statusCommand: SlashCommand = {
+      name: 'status',
+      description: 'Show current session state',
+      usage: '/status',
+      execute: statusHandler
+    };
+
+    const helpCommand: SlashCommand = {
+      name: 'help',
+      description: 'Show available commands',
+      usage: '/help',
+      aliases: ['h'],
+      execute: helpHandler
+    };
+
+    const exitCommand: SlashCommand = {
+      name: 'exit',
+      description: 'Exit Agent Mode',
+      usage: '/exit',
+      aliases: ['quit', 'q'],
+      execute: exitHandler
+    };
+
+    // Register commands
+    agentLoop.registerCommand(scanCommand);
+    agentLoop.registerCommand(statusCommand);
+    agentLoop.registerCommand(helpCommand);
+    agentLoop.registerCommand(exitCommand);
+
+    // Start Agent Mode
+    try {
+      await agentLoop.start();
+    } catch (error) {
+      console.error('Error in Agent Mode:', error);
+      process.exit(1);
+    }
   }, 100);
 } else {
   program.parse();

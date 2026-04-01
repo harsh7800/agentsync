@@ -385,7 +385,7 @@ The CLI becomes an AI-assisted terminal environment with:
 | S4-14 | Implement /status command to show current session | CLI | [x] |
 | S4-15 | Implement /help command with available commands | CLI | [x] |
 | S4-16 | Implement /exit command with graceful shutdown | CLI | [x] |
-| S4-17 | Update CLI entry point to enter Agent Loop mode by default | CLI | [ ] |
+| S4-17 | Update CLI entry point to enter Agent Loop mode by default | CLI | [x] |
 | S4-18 | E2E tests: Full interactive agent mode flow | E2E | [ ] |
 
 **Phase 2: Tool Support Expansion**

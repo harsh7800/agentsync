@@ -1,3 +1,4 @@
+import * as readline from 'readline';
 import type { SlashCommand, CommandContext, CommandResult, SessionState } from './types.js';
 import { CommandRegistry } from './command-registry.js';
 
@@ -181,5 +182,61 @@ export class AgentLoop {
     const sessionId = this.session.sessionId;
     this.session = this.createInitialState();
     this.session.sessionId = sessionId;
+  }
+
+  /**
+   * Start the Agent Loop REPL
+   */
+  async start(): Promise<void> {
+    // Display welcome message
+    console.log(this.config.welcomeMessage);
+
+    // Create readline interface
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
+      prompt: this.config.prompt
+    });
+
+    let running = true;
+
+    // Set up line handler
+    rl.on('line', async (input: string) => {
+      const result = await this.processInput(input);
+
+      // Display message if present
+      if (result.message) {
+        console.log(result.message);
+      }
+
+      // Exit if requested
+      if (result.shouldExit) {
+        running = false;
+        rl.close();
+        return;
+      }
+
+      // Show prompt again
+      rl.prompt();
+    });
+
+    // Handle close (Ctrl+C, Ctrl+D, etc.)
+    rl.on('close', () => {
+      running = false;
+      console.log('\nGoodbye! 👋');
+    });
+
+    // Show initial prompt
+    rl.prompt();
+
+    // Wait until stopped
+    return new Promise((resolve) => {
+      const checkInterval = setInterval(() => {
+        if (!running) {
+          clearInterval(checkInterval);
+          resolve();
+        }
+      }, 100);
+    });
   }
 }
