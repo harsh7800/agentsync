@@ -250,15 +250,16 @@ if (noArgsProvided) {
         showWelcome: true,
       });
 
-      // Handle graceful shutdown
+      // Handle graceful shutdown - don't call process.exit()
+      // Let Ink handle the cleanup properly
       process.on('SIGINT', () => {
         cleanup();
-        process.exit(0);
+        // Don't call process.exit() here - let Ink exit gracefully
       });
 
       process.on('SIGTERM', () => {
         cleanup();
-        process.exit(0);
+        // Don't call process.exit() here - let Ink exit gracefully
       });
     } else {
       // Fall back to Agent Mode with inquirer
