@@ -42,3 +42,6 @@ Thumbs.db
 *.tempact.exe
 act.zip
 act_Windows_x86_64.zip
+
+# Development guides (local only)
+DEVELOPMENT_TESTING_GUIDE.md

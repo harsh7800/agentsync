@@ -1,4 +1,4 @@
-import type { SessionState as ISessionState, CommandContext } from './types.js';
+import type { SessionState, SessionState as ISessionState, CommandContext } from './types.js';
 
 /**
  * SessionState class
@@ -6,7 +6,7 @@ import type { SessionState as ISessionState, CommandContext } from './types.js';
  * Manages the session state for the Agent Loop REPL.
  * Maintains scan results, migration state, and session metadata.
  */
-export class SessionState {
+export class SessionStateImpl {
   private state: ISessionState;
 
   constructor() {
@@ -64,6 +64,9 @@ export class SessionState {
     };
   }
 }
+
+// Backward compatibility alias
+export { SessionStateImpl as SessionState };
 
 /**
  * Creates a new empty session state
