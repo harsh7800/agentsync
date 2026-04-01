@@ -1,47 +1,54 @@
 /**
- * Unified Migration Service
- * 
- * This service handles migrations between tools using the directory-based
- * parsing architecture. It accepts tool root directories and produces
- * tool models that can be translated.
- * 
- * Migration Flow:
+ * Unified Migration Service - Refactored with Common Schema Support
+ *
+ * This service handles migrations between tools using either:
+ * 1. Legacy: Direct Tool→Tool translators (existing behavior)
+ * 2. Common Schema: Tool→Common Schema→Tool (new architecture)
+ *
+ * Migration Flow (Common Schema):
  * ```
  * Tool Root Directory
  *        ↓
- * Tool-Specific Parser (OpenCodeToolParser, ClaudeToolParser, etc.)
+ * Tool-Specific Parser
  *        ↓
- * Tool Model (unified format)
+ * Tool Model
  *        ↓
- * Translator (ClaudeToOpenCodeTranslator, etc.)
+ * Normalizer → Common Schema (canonical format)
  *        ↓
- * Target Tool Model
+ * Adapter → Target Tool Model
  *        ↓
- * Target Tool Writer (writes to target directory)
+ * Target Tool Writer
  * ```
+ *
+ * Feature Flag:
+ * - USE_COMMON_SCHEMA=true: Use new Common Schema architecture
+ * - USE_COMMON_SCHEMA=false (default): Use legacy direct translators
  */
 
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { 
-  OpenCodeToolParser, 
+import {
+  OpenCodeToolParser,
   ClaudeToolParser,
-  GeminiParser,
-  CursorParser,
-  toolPathRegistry 
+  toolPathRegistry
 } from '../parsers/index.js';
-import { 
-  ClaudeToOpenCodeTranslator, 
-  OpenCodeToClaudeTranslator,
-  GeminiToClaudeTranslator,
-  GeminiToOpenCodeTranslator,
-  CursorToClaudeTranslator,
-  CursorToOpenCodeTranslator
+import {
+  ClaudeToOpenCodeTranslator,
+  OpenCodeToClaudeTranslator
 } from '../translators/index.js';
 import { FileOperations } from '../file-operations.js';
 import type { ToolName } from '../registry/index.js';
 import type { OpenCodeToolModel } from '../parsers/opencode/types.js';
 import type { ClaudeToolModel } from '../parsers/claude/types.js';
+
+// Common Schema imports
+import {
+  OpenCodeNormalizer,
+  OpenCodeAdapter,
+  ClaudeNormalizer,
+  ClaudeAdapter
+} from '../parsers/index.js';
+import type { CommonSchema } from '../common-schema/types.js';
 
 /**
  * Result of a migration operation
@@ -60,6 +67,7 @@ export interface MigrationResult {
   warnings: string[];
   errors: string[];
   backupPath?: string;
+  usingCommonSchema?: boolean;
 }
 
 /**
@@ -73,6 +81,7 @@ export interface MigrationOptions {
   backupDir: string;
   dryRun: boolean;
   verbose?: boolean;
+  useCommonSchema?: boolean;
 }
 
 /**
@@ -84,136 +93,142 @@ interface ToolParser {
 }
 
 /**
- * Unified Migration Service
+ * Unified Migration Service with Common Schema Support
  */
 export class MigrationService {
   private fileOps: FileOperations;
-  
+
   // Tool parsers
   private parsers: Map<ToolName, ToolParser>;
-  
-  // Translators - use any to allow different translate signatures
+
+  // Legacy translators (direct Tool→Tool)
   private translators: Map<string, unknown>;
-  
-  constructor() {
+
+  // Common Schema normalizers (Tool→Common)
+  private normalizers: Map<ToolName, unknown>;
+
+  // Common Schema adapters (Common→Tool)
+  private adapters: Map<ToolName, unknown>;
+
+  // Feature flag
+  private useCommonSchema: boolean;
+
+  constructor(options?: { useCommonSchema?: boolean }) {
     this.fileOps = new FileOperations();
-    
-    // Initialize parsers with type assertions
-    // Note: Gemini and Cursor use legacy parsers as directory-based parsers don't exist yet
+
+    // Check environment variable or constructor option
+    this.useCommonSchema = options?.useCommonSchema ??
+      process.env.USE_COMMON_SCHEMA === 'true';
+
+    // Initialize parsers
     this.parsers = new Map<ToolName, ToolParser>([
       ['opencode', new OpenCodeToolParser() as ToolParser],
       ['claude', new ClaudeToolParser() as ToolParser]
     ]);
-    
-    // Initialize translators for all supported tool combinations
+
+    // Legacy translators (kept for backward compatibility)
     this.translators = new Map<string, unknown>([
-      // Claude ↔ OpenCode
       ['claude→opencode', new ClaudeToOpenCodeTranslator()],
-      ['opencode→claude', new OpenCodeToClaudeTranslator()],
-      // Gemini → Claude/OpenCode
-      ['gemini→claude', new GeminiToClaudeTranslator()],
-      ['gemini→opencode', new GeminiToOpenCodeTranslator()],
-      // Cursor → Claude/OpenCode
-      ['cursor→claude', new CursorToClaudeTranslator()],
-      ['cursor→opencode', new CursorToOpenCodeTranslator()]
+      ['opencode→claude', new OpenCodeToClaudeTranslator()]
+    ]);
+
+    // Common Schema normalizers (NEW)
+    this.normalizers = new Map<ToolName, unknown>([
+      ['opencode', new OpenCodeNormalizer()],
+      ['claude', new ClaudeNormalizer()]
+    ]);
+
+    // Common Schema adapters (NEW)
+    this.adapters = new Map<ToolName, unknown>([
+      ['opencode', new OpenCodeAdapter()],
+      ['claude', new ClaudeAdapter()]
     ]);
   }
-  
+
+  /**
+   * Check if Common Schema mode is enabled
+   */
+  isUsingCommonSchema(): boolean {
+    return this.useCommonSchema;
+  }
+
+  /**
+   * Enable/disable Common Schema mode
+   */
+  setUseCommonSchema(enabled: boolean): void {
+    this.useCommonSchema = enabled;
+  }
+
   /**
    * Perform a migration from one tool to another
    */
   async migrate(options: MigrationOptions): Promise<MigrationResult> {
-    const { sourceTool, targetTool, sourcePath, targetPath, backupDir, dryRun, verbose } = options;
+    const { sourceTool, targetTool, sourcePath, targetPath, dryRun, verbose } = options;
     const warnings: string[] = [];
     const errors: string[] = [];
-    
+
+    // Override with per-call option if provided
+    const useCommonSchema = options.useCommonSchema ?? this.useCommonSchema;
+
     try {
-      // Step 1: Validate source path is a directory
+      if (verbose) {
+        console.log(`Migration mode: ${useCommonSchema ? 'Common Schema' : 'Legacy (Direct)'}`);
+      }
+
+      // Validate source path
       if (verbose) console.log(`Validating source path: ${sourcePath}`);
-      
+
       const sourceStats = await fs.stat(sourcePath);
       if (!sourceStats.isDirectory()) {
-        throw new Error(`Source path is not a directory: ${sourcePath}. Please specify the tool root directory.`);
+        throw new Error(`Source path is not a directory: ${sourcePath}`);
       }
-      
-      // Step 2: Get source parser
+
+      // Get source parser
       const sourceParser = this.parsers.get(sourceTool);
       if (!sourceParser) {
         throw new Error(`Unsupported source tool: ${sourceTool}`);
       }
-      
-      // Step 3: Validate and scan source
+
+      // Validate and scan source
       if (verbose) console.log(`Scanning source: ${sourceTool}`);
-      
+
       const isValid = await sourceParser.isValid(sourcePath);
       if (!isValid) {
         throw new Error(`Invalid ${sourceTool} directory: ${sourcePath}`);
       }
-      
+
       const sourceScanResult = await sourceParser.scan(sourcePath);
       const sourceModel = sourceScanResult.model;
-      
-      // Step 4: Get translator
-      const translatorKey = `${sourceTool}→${targetTool}`;
-      const translator = this.translators.get(translatorKey);
-      
-      if (!translator) {
-        throw new Error(`No translator available for ${sourceTool} → ${targetTool}`);
-      }
-      
-      // Step 5: Translate
-      if (verbose) console.log(`Translating: ${sourceTool} → ${targetTool}`);
-      
-      // Type-safe translate call based on source/target tools
+
+      // Perform migration using selected architecture
       let targetModel: unknown;
-      
-      // Handle Claude ↔ OpenCode
-      if (sourceTool === 'claude' && targetTool === 'opencode') {
-        const t = translator as ClaudeToOpenCodeTranslator;
-        targetModel = t.translate(sourceModel as Parameters<typeof t.translate>[0]);
-      } else if (sourceTool === 'opencode' && targetTool === 'claude') {
-        const t = translator as OpenCodeToClaudeTranslator;
-        targetModel = t.translate(sourceModel as Parameters<typeof t.translate>[0]);
+
+      if (useCommonSchema) {
+        // NEW: Common Schema architecture
+        if (verbose) console.log(`Using Common Schema: ${sourceTool} → Common → ${targetTool}`);
+        targetModel = await this.migrateViaCommonSchema(sourceTool, targetTool, sourceModel);
+      } else {
+        // LEGACY: Direct translator architecture
+        if (verbose) console.log(`Using Legacy: ${sourceTool} → ${targetTool}`);
+        targetModel = await this.migrateViaLegacyTranslator(sourceTool, targetTool, sourceModel);
       }
-      // Handle Gemini → Claude/OpenCode
-      else if (sourceTool === 'gemini' && targetTool === 'claude') {
-        const t = translator as GeminiToClaudeTranslator;
-        targetModel = t.translate(sourceModel as Parameters<typeof t.translate>[0]);
-      } else if (sourceTool === 'gemini' && targetTool === 'opencode') {
-        const t = translator as GeminiToOpenCodeTranslator;
-        targetModel = t.translate(sourceModel as Parameters<typeof t.translate>[0]);
-      }
-      // Handle Cursor → Claude/OpenCode
-      else if (sourceTool === 'cursor' && targetTool === 'claude') {
-        const t = translator as CursorToClaudeTranslator;
-        targetModel = t.translate(sourceModel as Parameters<typeof t.translate>[0]);
-      } else if (sourceTool === 'cursor' && targetTool === 'opencode') {
-        const t = translator as CursorToOpenCodeTranslator;
-        targetModel = t.translate(sourceModel as Parameters<typeof t.translate>[0]);
-      }
-      // Note: Reverse translations (Claude/OpenCode → Gemini/Cursor) are not yet implemented
-      else {
-        throw new Error(`Translation from ${sourceTool} to ${targetTool} not yet supported`);
-      }
-      
-      // Step 6: Write target config
+
+      // Write target config
       if (dryRun) {
         if (verbose) console.log('Dry run - skipping write');
       } else {
-        // Validate target directory exists
         const targetDirStats = await fs.stat(targetPath);
         if (!targetDirStats.isDirectory()) {
           throw new Error(`Target path is not a directory: ${targetPath}`);
         }
-        
-        // Write based on target tool type
+
         if (verbose) console.log(`Writing target: ${targetTool}`);
         await this.writeTargetConfig(targetTool, targetPath, targetModel);
       }
-      
+
       // Calculate items migrated
       const itemsMigrated = this.countMigratedItems(sourceModel);
-      
+
       return {
         success: true,
         sourceTool,
@@ -222,9 +237,10 @@ export class MigrationService {
         targetPath,
         itemsMigrated,
         warnings,
-        errors
+        errors,
+        usingCommonSchema: useCommonSchema
       };
-      
+
     } catch (error) {
       errors.push(error instanceof Error ? error.message : String(error));
       return {
@@ -235,17 +251,89 @@ export class MigrationService {
         targetPath,
         itemsMigrated: { mcpServers: 0, agents: 0, skills: 0 },
         warnings,
-        errors
+        errors,
+        usingCommonSchema: useCommonSchema
       };
     }
   }
-  
+
+  /**
+   * Migrate using Common Schema architecture (NEW)
+   * Tool → Normalizer → Common Schema → Adapter → Tool
+   */
+  private async migrateViaCommonSchema(
+    sourceTool: ToolName,
+    targetTool: ToolName,
+    sourceModel: unknown
+  ): Promise<unknown> {
+    // Step 1: Normalize source to Common Schema
+    const normalizer = this.normalizers.get(sourceTool);
+    if (!normalizer) {
+      throw new Error(`No normalizer available for ${sourceTool}`);
+    }
+
+    let commonSchema: CommonSchema;
+    if (sourceTool === 'opencode') {
+      const n = normalizer as OpenCodeNormalizer;
+      commonSchema = n.toCommonSchema(sourceModel as OpenCodeToolModel);
+    } else if (sourceTool === 'claude') {
+      const n = normalizer as ClaudeNormalizer;
+      commonSchema = n.toCommonSchema(sourceModel as ClaudeToolModel);
+    } else {
+      throw new Error(`Common Schema not yet supported for ${sourceTool}`);
+    }
+
+    // Step 2: Adapt Common Schema to target
+    const adapter = this.adapters.get(targetTool);
+    if (!adapter) {
+      throw new Error(`No adapter available for ${targetTool}`);
+    }
+
+    if (targetTool === 'opencode') {
+      const a = adapter as OpenCodeAdapter;
+      return a.fromCommonSchema(commonSchema);
+    } else if (targetTool === 'claude') {
+      const a = adapter as ClaudeAdapter;
+      return a.fromCommonSchema(commonSchema);
+    } else {
+      throw new Error(`Common Schema not yet supported for ${targetTool}`);
+    }
+  }
+
+  /**
+   * Migrate using legacy direct translators (LEGACY)
+   * Tool → Translator → Tool
+   */
+  private async migrateViaLegacyTranslator(
+    sourceTool: ToolName,
+    targetTool: ToolName,
+    sourceModel: unknown
+  ): Promise<unknown> {
+    const translatorKey = `${sourceTool}→${targetTool}`;
+    const translator = this.translators.get(translatorKey);
+
+    if (!translator) {
+      throw new Error(`No legacy translator available for ${sourceTool} → ${targetTool}`);
+    }
+
+    // Handle Claude ↔ OpenCode
+    if (sourceTool === 'claude' && targetTool === 'opencode') {
+      const t = translator as ClaudeToOpenCodeTranslator;
+      return t.translate(sourceModel as Parameters<typeof t.translate>[0]);
+    } else if (sourceTool === 'opencode' && targetTool === 'claude') {
+      const t = translator as OpenCodeToClaudeTranslator;
+      return t.translate(sourceModel as Parameters<typeof t.translate>[0]);
+    }
+
+    throw new Error(`Legacy translation from ${sourceTool} to ${targetTool} not supported`);
+  }
+
   /**
    * Write target configuration based on tool type
    */
   private async writeTargetConfig(
-    tool: ToolName, 
-    targetPath: string, 
+    tool: ToolName,
+    targetPath: string,
     config: unknown
   ): Promise<void> {
     switch (tool) {
@@ -259,7 +347,7 @@ export class MigrationService {
         throw new Error(`Writing ${tool} config not yet implemented`);
     }
   }
-  
+
   /**
    * Write OpenCode configuration to opencode.json
    */
@@ -280,16 +368,16 @@ export class MigrationService {
         { mcp: mcpData }
       );
     }
-    
+
     // Write agents as individual files
     if (config.agents && config.agents.length > 0) {
       const agentsDir = path.join(targetPath, 'agents');
       await fs.mkdir(agentsDir, { recursive: true });
-      
+
       for (const agent of config.agents) {
         const agentDir = path.join(agentsDir, agent.name);
         await fs.mkdir(agentDir, { recursive: true });
-        
+
         const agentContent = this.formatAgentMarkdown(agent);
         await fs.writeFile(
           path.join(agentDir, 'agent.md'),
@@ -298,16 +386,16 @@ export class MigrationService {
         );
       }
     }
-    
+
     // Write skills as individual files
     if (config.skills && config.skills.length > 0) {
       const skillsDir = path.join(targetPath, 'skills');
       await fs.mkdir(skillsDir, { recursive: true });
-      
+
       for (const skill of config.skills) {
         const skillDir = path.join(skillsDir, skill.name);
         await fs.mkdir(skillDir, { recursive: true });
-        
+
         const skillContent = this.formatSkillMarkdown(skill);
         await fs.writeFile(
           path.join(skillDir, 'skill.md'),
@@ -317,13 +405,13 @@ export class MigrationService {
       }
     }
   }
-  
+
   /**
    * Write Claude configuration to settings.json
    */
   private async writeClaudeConfig(targetPath: string, config: ClaudeToolModel): Promise<void> {
     const configData: Record<string, unknown> = {};
-    
+
     // Write MCP servers
     if (config.mcpServers && config.mcpServers.length > 0) {
       const mcpData: Record<string, unknown> = {};
@@ -336,7 +424,7 @@ export class MigrationService {
       }
       configData.mcpServers = mcpData;
     }
-    
+
     // Write agents
     if (config.agents && config.agents.length > 0) {
       const agentsData: Record<string, unknown> = {};
@@ -349,13 +437,13 @@ export class MigrationService {
       }
       configData.agents = agentsData;
     }
-    
+
     await this.fileOps.writeConfigFile(
       path.join(targetPath, 'settings.json'),
       configData
     );
   }
-  
+
   /**
    * Format agent as Markdown with frontmatter
    */
@@ -364,7 +452,7 @@ export class MigrationService {
       '---',
       `description: ${agent.description}`,
       agent.systemPrompt ? `system_prompt: ${agent.systemPrompt}` : '',
-      agent.tools && agent.tools.length > 0 
+      agent.tools && agent.tools.length > 0
         ? `tools:\n${agent.tools.map(t => `  - ${t}`).join('\n')}`
         : '',
       '---',
@@ -373,10 +461,10 @@ export class MigrationService {
       '',
       agent.description
     ].filter(line => line !== '').join('\n');
-    
+
     return frontmatter;
   }
-  
+
   /**
    * Format skill as Markdown with frontmatter
    */
@@ -392,10 +480,10 @@ export class MigrationService {
       '',
       skill.content
     ].filter(line => line !== '').join('\n');
-    
+
     return frontmatter;
   }
-  
+
   /**
    * Count migrated items from source model
    */
@@ -407,7 +495,7 @@ export class MigrationService {
       skills: m.skills?.length || 0
     };
   }
-  
+
   /**
    * Check if a tool directory is valid
    */
@@ -417,26 +505,26 @@ export class MigrationService {
       if (!stats.isDirectory()) {
         return { valid: false, error: 'Path is not a directory' };
       }
-      
+
       const parser = this.parsers.get(tool);
       if (!parser) {
         return { valid: false, error: `Unsupported tool: ${tool}` };
       }
-      
+
       const isValid = await parser.isValid(dirPath);
       if (!isValid) {
         return { valid: false, error: `Not a valid ${tool} directory` };
       }
-      
+
       return { valid: true };
     } catch (error) {
-      return { 
-        valid: false, 
-        error: error instanceof Error ? error.message : String(error) 
+      return {
+        valid: false,
+        error: error instanceof Error ? error.message : String(error)
       };
     }
   }
-  
+
   /**
    * Get the default directory for a tool (global installation)
    */
