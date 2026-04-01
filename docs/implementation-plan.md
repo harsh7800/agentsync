@@ -37,16 +37,16 @@ Sprint 3: [████████████████████] 100% �
 Sprint 4 Phase 1: [██████████] 100% ✅ COMPLETE (18/18 tasks) - Agent Mode REPL
 Sprint 4 Phase 1.5: [██████████] 100% ✅ COMPLETE (12/12 tasks) - AI Scanner + OpenCode Fix
 Sprint 4 Phase 1.6: [████████░░] 75%  (9/12 tasks) - Modern TUI with Ink (IN PROGRESS)
-Sprint 4 Phase 2: [███░░░░░░░] 38%  (3/8 tasks) - Gemini/Cursor adapters
-Overall:  [████████████░░░░░░░░] 64% (82/134 tasks)
+Sprint 4 Phase 2: [████████░░] 88%  (7/8 tasks) - Gemini/Cursor adapters
+Overall:  [█████████████░░░░░░░] 70% (83/134 tasks)
 ```
 
 ### Latest Metrics
-- **Total Tests**: 343 ✅ (343 total)
+- **Total Tests**: 638 ✅ (638 total)
 - **Pass Rate**: 100%
 - **Coverage**: Core package 95%+, Schemas 88%+, CLI 91%+, E2E 100%
 - **npm Packages**: @agent-sync/core@1.0.0, @agent-sync/schemas@1.0.0, @agent-sync/cli@1.0.1
-- **Last Updated**: 2026-03-28
+- **Last Updated**: 2026-04-01
 
 ### Current Sprint Status
 ✅ **CI/CD Setup Complete** - Ready for Sprint 4
@@ -543,7 +543,7 @@ packages/cli/src/ui-ink/
 | S4-22 | Implement Cursor adapter (.cursorrules + MCP support) | Core | [x] |
 | S4-23 | Implement Gemini → Claude translator | Core | [x] |
 | S4-24 | Implement Cursor → OpenCode translator | Core | [x] |
-| S4-25 | Update CLI to support new tool options (--from/--to) | CLI | [ ] |
+| S4-25 | Update CLI to support new tool options (--from/--to) | CLI | [x] |
 | S4-26 | Cross-tool matrix tests for 4-tool combinations | E2E | [ ] |
 
 **Sprint 4 Definition of Done:**
@@ -561,10 +561,10 @@ packages/cli/src/ui-ink/
 - [x] Show exact migrated file paths
 - [x] `verify` command for checking tool structure
 - [x] Filter adapter list to show only supported adapters
-- [ ] Ink-based modern TUI (Phase 1.6)
-- [ ] Gemini CLI adapter complete
-- [ ] Cursor adapter complete
-- [ ] All 4 tools supported (Claude, OpenCode, Gemini, Cursor)
+- [x] Ink-based modern TUI (Phase 1.6)
+- [x] Gemini CLI adapter complete
+- [x] Cursor adapter complete
+- [x] All 4 tools supported (Claude, OpenCode, Gemini, Cursor)
 - [ ] Cross-tool matrix tests passing
 
 ---
