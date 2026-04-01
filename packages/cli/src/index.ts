@@ -66,7 +66,6 @@ program
       // Render Ink TUI
       const cleanup = renderInkApp({
         initialRoute: 'scan',
-        showWelcome: true,
       });
 
       // Handle graceful shutdown
@@ -247,7 +246,6 @@ if (noArgsProvided) {
       // Render modern Ink TUI
       const cleanup = renderInkApp({
         initialRoute: 'scan',
-        showWelcome: true,
       });
 
       // Handle graceful shutdown - don't call process.exit()

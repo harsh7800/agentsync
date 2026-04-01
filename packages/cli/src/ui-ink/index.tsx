@@ -5,22 +5,11 @@
 
 import React from 'react';
 import { render } from 'ink';
-import { App } from './App.js';
+import { App, type Route } from './App.js';
 
 export interface InkAppOptions {
   /** Initial route to render */
-  initialRoute?: 'scan' | 'migrate' | 'help';
-  /** Whether to show welcome screen */
-  showWelcome?: boolean;
-  /** Session data from previous scans */
-  sessionData?: {
-    scannedTools?: string[];
-    detectedAgents?: Array<{
-      tool: string;
-      name: string;
-      path: string;
-    }>;
-  };
+  initialRoute?: Route;
 }
 
 /**
@@ -29,13 +18,11 @@ export interface InkAppOptions {
  * @returns Cleanup function to unmount the app
  */
 export function renderInkApp(options: InkAppOptions = {}): () => void {
-  const { initialRoute = 'scan', showWelcome = true, sessionData } = options;
+  const { initialRoute = 'scan' } = options;
 
   const app = render(
     <App
       initialRoute={initialRoute}
-      showWelcome={showWelcome}
-      sessionData={sessionData}
     />
   );
 
@@ -55,4 +42,3 @@ export function canRenderInk(): boolean {
 }
 
 export { App } from './App.js';
-export { theme } from './theme.js';
