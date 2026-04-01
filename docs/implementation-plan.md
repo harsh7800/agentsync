@@ -36,9 +36,9 @@ Sprint 2: [██████████] 100% ✅ COMPLETE (10/10 tasks)
 Sprint 3: [████████████████████] 100% ✅ COMPLETE (21/21 tasks)
 Sprint 4 Phase 1: [██████████] 100% ✅ COMPLETE (18/18 tasks) - Agent Mode REPL
 Sprint 4 Phase 1.5: [██████████] 100% ✅ COMPLETE (12/12 tasks) - AI Scanner + OpenCode Fix
-Sprint 4 Phase 1.6: [░░░░░░░░░░] 0%  (0/12 tasks) - Modern TUI with Ink (PLANNED)
+Sprint 4 Phase 1.6: [████████░░] 75%  (9/12 tasks) - Modern TUI with Ink (IN PROGRESS)
 Sprint 4 Phase 2: [███░░░░░░░] 38%  (3/8 tasks) - Gemini/Cursor adapters
-Overall:  [████████████░░░░░░░░] 55% (73/134 tasks)
+Overall:  [████████████░░░░░░░░] 64% (82/134 tasks)
 ```
 
 ### Latest Metrics
@@ -480,31 +480,30 @@ The CLI becomes an AI-assisted terminal environment with:
 
 | # | Task | Type | Status |
 |---|------|------|--------|
-| S4-27 | Setup Ink and React dependencies | Setup | [ ] |
-| S4-28 | Create Ink app infrastructure (App.tsx, routing, state) | UI | [ ] |
-| S4-29 | Build ScanView component with visual scope selector | UI | [ ] |
-| S4-30 | Implement FileBrowser component for path selection | UI | [ ] |
-| S4-31 | Build MigrationView with adapter cards | UI | [ ] |
-| S4-32 | Add PathSelector for migration output location | UI | [ ] |
-| S4-33 | Create MigrationResults showing exact file paths | UI | [ ] |
+| S4-27 | Setup Ink and React dependencies | Setup | [x] |
+| S4-28 | Create Ink app infrastructure (App.tsx, routing, state) | UI | [x] |
+| S4-29 | Build ScanView component with visual scope selector | UI | [x] |
+| S4-30 | Implement FileBrowser component for path selection | UI | [x] |
+| S4-32 | Add PathSelector for migration output location | UI | [x] |
+| S4-33 | Create MigrationResults showing exact file paths | UI | [x] |
 | S4-34 | Build ResultsPanel for scan/migration display | UI | [ ] |
-| S4-35 | Add keyboard navigation and shortcuts | UX | [ ] |
-| S4-36 | Integrate Ink app into CLI with fallback mode | Integration | [ ] |
+| S4-35 | Add keyboard navigation and shortcuts | UX | [x] |
+| S4-36 | Integrate Ink app into CLI with fallback mode | Integration | [x] |
 | S4-37 | Write tests for Ink components | Testing | [ ] |
 | S4-38 | Update documentation with Ink UI screenshots | Docs | [ ] |
 
 **Phase 1.6 Definition of Done:**
-- [ ] Ink dependencies installed and configured
-- [ ] React-based TUI renders full-screen interface
-- [ ] Visual sidebar with navigation icons
-- [ ] Scan view with scope buttons (not prompts)
-- [ ] File browser with arrow key navigation
-- [ ] Migration view with adapter cards
-- [ ] Path selector for output location
-- [ ] Results show exact migrated file paths
-- [ ] Keyboard shortcuts functional (`/`, `q`, `esc`, arrows)
-- [ ] Dark, minimal color scheme implemented
-- [ ] Fallback to inquirer when TTY not available
+- [x] Ink dependencies installed and configured
+- [x] React-based TUI renders full-screen interface
+- [x] Visual sidebar with navigation icons
+- [x] Scan view with scope buttons (not prompts)
+- [x] File browser with arrow key navigation
+- [x] Migration view with adapter cards
+- [x] Path selector for output location
+- [x] Results show exact migrated file paths
+- [x] Keyboard shortcuts functional (`/`, `q`, `esc`, arrows)
+- [x] Dark, minimal color scheme implemented
+- [x] Fallback to inquirer when TTY not available
 - [ ] All Ink components tested
 
 **Dependencies:**
