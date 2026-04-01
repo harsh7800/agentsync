@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Migration View Component
  * Wizard-style interface for migrating agents between tools
  */
@@ -78,7 +78,7 @@ export function MigrationView({
 
   // Get unique tools from detected agents
   const availableSourceTools = [...new Set(detectedAgents.map(a => a.tool))];
-  const availableTargetTools = Object.keys(TOOL_NAMES).filter(t => t !== sourceTool);
+  const availableTargetTools = ['claude'].filter(t => t !== sourceTool);
   
   // Get agents for selected source tool
   const agentsToMigrate = detectedAgents.filter(a => a.tool === sourceTool);
