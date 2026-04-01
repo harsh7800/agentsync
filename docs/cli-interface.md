@@ -92,6 +92,36 @@ agentsync --legacy-interactive
 
 **Note:** Legacy natural language mode is deprecated in favor of the new slash command system.
 
+### TUI Mode (Ink-based Terminal UI) ⭐ NEW
+
+Launch the modern React-based terminal UI:
+
+```bash
+agentsync tui
+```
+
+The TUI provides a full-screen interactive interface with:
+- **Welcome Screen**: Entry point with tool detection
+- **Scan View**: Visual scanning with progress indicators
+- **Migration Wizard**: 6-step guided migration process
+  1. Select Source Tool
+  2. Select Target Tool (Claude Code only)
+  3. Select Output Location (with FileBrowser)
+  4. Confirm Migration
+  5. Migration Progress (with real-time logs)
+  6. Migration Complete
+- **File Browser**: Keyboard-navigable path selection
+- **Keyboard Shortcuts**: Arrow keys, Enter, Escape, 'q' for quit
+
+**Features:**
+- Dark, minimal color scheme
+- Full keyboard navigation
+- Real-time progress updates
+- Scrollable log panels
+- Wizard-style step indicators
+
+**Fallback:** Automatically falls back to inquirer-based prompts when TTY is not available (e.g., CI/SSH).
+
 ---
 
 ## 2. Slash Commands (Agent Mode)
@@ -102,6 +132,7 @@ When in Agent Mode, all commands start with `/`:
 |---------|-------------|---------|
 | `/` or `/help` | Show available commands | `/>` |
 | `/scan` | Scan for agents and tools | `/scan` |
+| `/sync` | Incremental sync of detected tools | `/sync` |
 | `/migrate` | Start migration workflow | `/migrate` |
 | `/detect` | Detect installed tools | `/detect` |
 | `/status` | Show current session state | `/status` |
@@ -161,16 +192,18 @@ Prompt: Migrate now?
 
 ---
 
-## 4. Legacy Command Mode (Non-Agent)
+## 4. Command Mode (Non-Agent)
 
-| Command | Description |
-|---------|-------------|
-| `migrate` | Run migration |
-| `rollback` | Restore backup |
-| `detect` | Detect installed tools |
-| `update-schemas` | Update schema registry |
-| `report` | Show migration report |
-| `doctor` | Diagnose config issues |
+| Command | Description | Example |
+|---------|-------------|---------|
+| `migrate` | Run migration | `agentsync migrate --from claude --to opencode` |
+| `sync` | Incremental sync | `agentsync sync` |
+| `detect` | Detect installed tools | `agentsync detect` |
+| `tui` | Launch Ink TUI | `agentsync tui` |
+| `rollback` | Restore backup | `agentsync rollback cursor` |
+| `update-schemas` | Update schema registry | `agentsync update-schemas` |
+| `report` | Show migration report | `agentsync report` |
+| `doctor` | Diagnose config issues | `agentsync doctor` |
 
 ---
 

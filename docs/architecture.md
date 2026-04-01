@@ -159,22 +159,59 @@ AgentSync supports two types of tools:
 Each tool has its own parser directory:
 ```
 packages/core/src/parsers/
-├── claude/           # Single-file parser
-│   ├── scanner.ts
-│   ├── tool.parser.ts
-│   └── types.ts
-├── opencode/         # Directory-based parser
+├── claude/                    # Single-file parser (NEW)
 │   ├── scanner.ts
 │   ├── tool.parser.ts
 │   ├── types.ts
-│   └── parsers/     # Individual file parsers
+│   ├── adapter.ts             # Common Schema adapter
+│   └── normalizer.ts          # Common Schema normalizer
+│   └── parsers/
+│       ├── agent.parser.ts
+│       ├── mcp.parser.ts
+│       └── config.parser.ts
+├── opencode/                  # Directory-based parser (NEW)
+│   ├── scanner.ts
+│   ├── tool.parser.ts
+│   ├── types.ts
+│   ├── adapter.ts             # Common Schema adapter
+│   ├── normalizer.ts          # Common Schema normalizer
+│   └── parsers/              # Individual file parsers
 │       ├── agent.parser.ts
 │       ├── skill.parser.ts
 │       ├── mcp.parser.ts
 │       └── config.parser.ts
-└── registry/         # Tool path registry
+├── cursor/                    # Cursor parser (NEW)
+│   ├── parser.ts
+│   └── types.ts
+├── gemini/                    # Gemini parser (NEW)
+│   ├── parser.ts
+│   └── types.ts
+├── opencode-directory-scanner/# Legacy scanner (DEPRECATED)
+│   └── opencode-agent-parser.ts
+├── claude.parser.ts          # Legacy parser (DEPRECATED)
+├── opencode.parser.ts        # Legacy parser (DEPRECATED)
+├── cursor.parser.ts          # Legacy parser (DEPRECATED)
+├── gemini.parser.ts          # Legacy parser (DEPRECATED)
+└── registry/                 # Tool path registry
     └── tool-paths.registry.ts
 ```
+
+### Parser Architecture Notes
+
+**New Architecture (v1.1.0+):**
+- Tool-specific directories (`claude/`, `opencode/`, `cursor/`, `gemini/`)
+- Common Schema support via adapters and normalizers
+- Modular design with separate scanners, parsers, and types
+
+**Legacy Architecture (v1.0.x):**
+- Root-level parser files (DEPRECATED)
+- Will be removed in v2.0.0
+- Currently maintained for backward compatibility
+
+**Migration Path:**
+- Use new tool-specific parsers for new development
+- Legacy parsers redirect to new parsers internally
+- All new features implemented in new architecture only
 
 ---
 

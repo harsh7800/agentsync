@@ -1,4 +1,4 @@
-# AgentSync UI Architecture
+﻿# AgentSync UI Architecture
 
 ## Overview
 
