@@ -21,6 +21,7 @@ import type {
   ScanError,
   MCPServerConfig,
 } from './types.js';
+import { AICrossValidator, type CrossValidationOptions } from './ai-cross-validator.js';
 
 /**
  * Default options for scanning
@@ -126,24 +127,32 @@ export class AIDirectoryScanner {
       // Remove duplicates
       const uniqueFiles = this.deduplicateFiles(files);
 
+      // Cross-validate files to eliminate false positives
+      const validator = new AICrossValidator({
+        minConfidence: 0.6,
+        strictMode: false,
+        validateReferences: true,
+      });
+      const validatedFiles = await validator.filterValidFiles(uniqueFiles);
+
       // Categorize files
-      const agents = uniqueFiles.filter((f) => f.type === 'agent');
-      const skills = uniqueFiles.filter((f) => f.type === 'skill');
-      const configs = uniqueFiles.filter((f) => f.type === 'config');
-      const projectLevel = uniqueFiles.filter((f) => f.scope === 'project');
-      const globalLevel = uniqueFiles.filter((f) => f.scope === 'global');
+      const agents = validatedFiles.filter((f) => f.type === 'agent');
+      const skills = validatedFiles.filter((f) => f.type === 'skill');
+      const configs = validatedFiles.filter((f) => f.type === 'config');
+      const projectLevel = validatedFiles.filter((f) => f.scope === 'project');
+      const globalLevel = validatedFiles.filter((f) => f.scope === 'global');
 
       const duration = Date.now() - startTime;
 
       return {
-        files: uniqueFiles,
+        files: validatedFiles,
         agents,
         skills,
         configs,
         projectLevel,
         globalLevel,
         duration,
-        filesScanned: uniqueFiles.length,
+        filesScanned: validatedFiles.length,
         errors,
       };
     } catch (error) {

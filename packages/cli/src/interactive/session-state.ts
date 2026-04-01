@@ -11,7 +11,7 @@ export class SessionStateImpl {
 
   constructor() {
     this.state = this.getInitialState();
-  }
+  }before
 
   private getInitialState(): ISessionState {
     const now = new Date();

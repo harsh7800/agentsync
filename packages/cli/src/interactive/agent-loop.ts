@@ -1,6 +1,8 @@
-import * as readline from 'readline';
+import inquirer from 'inquirer';
 import type { SlashCommand, CommandContext, CommandResult, SessionState } from './types.js';
 import { CommandRegistry, RegisteredCommand } from './command-registry.js';
+import { Banner } from '../ui/index.js';
+import chalk from 'chalk';
 
 export interface AgentLoopConfig {
   /** REPL prompt symbol (default: "> ") */
@@ -12,7 +14,11 @@ export interface AgentLoopConfig {
 /**
  * AgentLoop - Main REPL for Interactive Agent Mode
  * 
- * Manages the interactive session, command routing, and state persistence.
+ * Manages the interactive session with enhanced UX:
+ * - Guided welcome flow
+ * - Slash command autocomplete (triggers on "/")
+ * - File browser for path selection
+ * - Interactive prompts throughout
  */
 export class AgentLoop {
   private registry: CommandRegistry;
@@ -75,6 +81,91 @@ export class AgentLoop {
   }
 
   /**
+   * Show guided welcome prompt
+   */
+  private async showWelcomePrompt(): Promise<'commands' | 'typing' | 'help'> {
+    const { action } = await inquirer.prompt([{
+      type: 'list',
+      name: 'action',
+      message: chalk.cyan('Welcome to AgentSync! How would you like to proceed?'),
+      choices: [
+        { 
+          name: '🚀 Start with guided commands (recommended)', 
+          value: 'commands',
+          short: 'Guided'
+        },
+        { 
+          name: '⌨️  Start typing commands manually', 
+          value: 'typing',
+          short: 'Manual'
+        },
+        { 
+          name: '❓ Show me what\'s available', 
+          value: 'help',
+          short: 'Help'
+        }
+      ],
+      default: 'commands'
+    }]);
+
+    return action;
+  }
+
+  /**
+   * Show command selector with autocomplete
+   */
+  private async showCommandSelector(): Promise<string | null> {
+    const commands = this.registry.getAll();
+    
+    const { command } = await inquirer.prompt([{
+      type: 'list',
+      name: 'command',
+      message: 'Select a command:',
+      choices: [
+        ...commands.map(cmd => ({
+          name: `/${cmd.name.padEnd(12)} ${chalk.gray(cmd.description)}`,
+          value: cmd.name,
+          short: `/${cmd.name}`
+        })),
+        new inquirer.Separator(),
+        { name: chalk.gray('Cancel'), value: null, short: 'Cancel' }
+      ],
+      pageSize: 10
+    }]);
+
+    return command;
+  }
+
+  /**
+   * Get input from user (either command selector or typed input)
+   */
+  private async getInput(): Promise<string | null> {
+    const { input } = await inquirer.prompt([{
+      type: 'input',
+      name: 'input',
+      message: this.config.prompt,
+      transformer: (input: string) => {
+        // If user types "/", trigger command selector
+        if (input === '/') {
+          return chalk.cyan('/') + chalk.gray(' (press Enter to see commands)');
+        }
+        return input;
+      }
+    }]);
+
+    // If user typed "/", show command selector
+    if (input.trim() === '/') {
+      const selectedCommand = await this.showCommandSelector();
+      if (selectedCommand) {
+        return `/${selectedCommand}`;
+      }
+      return null; // User cancelled
+    }
+
+    return input;
+  }
+
+  /**
    * Process a single input line
    */
   async processInput(input: string): Promise<CommandResult> {
@@ -88,11 +179,14 @@ export class AgentLoop {
     // Parse the input
     const parsed = this.registry.parse(trimmed);
 
-    // Handle special case: just "/" shows help
+    // Handle special case: just "/" shows command selector
     if (parsed.command === '') {
-      const helpCommand = this.registry.get('help');
-      if (helpCommand) {
-        return this.executeCommand(helpCommand, parsed.args, parsed.flags);
+      const selectedCommand = await this.showCommandSelector();
+      if (selectedCommand) {
+        const command = this.registry.get(selectedCommand);
+        if (command) {
+          return this.executeCommand(command, [], {});
+        }
       }
       return { success: true };
     }
@@ -188,55 +282,62 @@ export class AgentLoop {
    * Start the Agent Loop REPL
    */
   async start(): Promise<void> {
-    // Display welcome message
-    console.log(this.config.welcomeMessage);
+    // Note: Banner is already displayed in index.ts before AgentLoop starts
+    
+    // Show welcome prompt
+    const action = await this.showWelcomePrompt();
 
-    // Create readline interface
-    const rl = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout,
-      prompt: this.config.prompt
-    });
+    if (action === 'help') {
+      const helpCommand = this.registry.get('help');
+      if (helpCommand) {
+        const result = await this.executeCommand(helpCommand, [], {});
+        if (result.message) {
+          console.log(result.message);
+        }
+      }
+    }
 
     let running = true;
+    let initialCommandShown = false;
 
-    // Set up line handler
-    rl.on('line', async (input: string) => {
-      const result = await this.processInput(input);
-
-      // Display message if present
-      if (result.message) {
-        console.log(result.message);
-      }
-
-      // Exit if requested
-      if (result.shouldExit) {
-        running = false;
-        rl.close();
-        return;
-      }
-
-      // Show prompt again
-      rl.prompt();
-    });
-
-    // Handle close (Ctrl+C, Ctrl+D, etc.)
-    rl.on('close', () => {
-      running = false;
-      console.log('\nGoodbye! 👋');
-    });
-
-    // Show initial prompt
-    rl.prompt();
-
-    // Wait until stopped
-    return new Promise((resolve) => {
-      const checkInterval = setInterval(() => {
-        if (!running) {
-          clearInterval(checkInterval);
-          resolve();
+    while (running) {
+      try {
+        // If guided mode selected and first iteration, show command selector immediately
+        let input: string | null;
+        if (action === 'commands' && !initialCommandShown) {
+          initialCommandShown = true;
+          input = await this.showCommandSelector();
+          if (input) {
+            input = `/${input}`;
+          }
+        } else {
+          // Get input (either typed or from command selector)
+          input = await this.getInput();
         }
-      }, 100);
-    });
+
+        // User cancelled command selector
+        if (input === null) {
+          continue;
+        }
+
+        // Process the input
+        const result = await this.processInput(input);
+
+        // Display message if present
+        if (result.message) {
+          console.log(result.message);
+        }
+
+        // Exit if requested
+        if (result.shouldExit) {
+          running = false;
+          console.log('\nGoodbye! 👋');
+          break;
+        }
+
+      } catch (error) {
+        console.error(chalk.red(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`));
+      }
+    }
   }
 }

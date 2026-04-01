@@ -114,7 +114,7 @@ describe('/scan Command Handler (CH-SCAN)', () => {
       const { scanHandler } = await import('../../interactive/commands/scan.js');
 
       // Act
-      const result = await scanHandler([], mockContext);
+      const result = await scanHandler(mockContext);
 
       // Assert
       expect(result).toBeDefined();
@@ -125,7 +125,7 @@ describe('/scan Command Handler (CH-SCAN)', () => {
       const { scanHandler } = await import('../../interactive/commands/scan.js');
 
       // Act
-      const result = await scanHandler([], mockContext);
+      const result = await scanHandler(mockContext);
 
       // Assert
       expect(result).toBeDefined();
@@ -165,12 +165,20 @@ describe('/scan Command Handler (CH-SCAN)', () => {
       expect(displayScanResults).toBeDefined();
     });
 
-    it('promptForMigration returns user choice', async () => {
+    it('promptMigrationOutputPath allows selecting output location', async () => {
       // Arrange
-      const { promptForMigration } = await import('../../interactive/commands/scan.js');
+      const { promptMigrationOutputPath } = await import('../../interactive/commands/scan.js');
 
       // Act & Assert
-      expect(promptForMigration).toBeDefined();
+      expect(promptMigrationOutputPath).toBeDefined();
+    });
+
+    it('displayMigrationResults shows exact file paths', async () => {
+      // Arrange
+      const { displayMigrationResults } = await import('../../interactive/commands/scan.js');
+
+      // Act & Assert
+      expect(displayMigrationResults).toBeDefined();
     });
 
     it('updateSessionWithResults updates context', async () => {

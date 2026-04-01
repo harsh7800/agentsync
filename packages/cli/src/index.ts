@@ -4,6 +4,7 @@ import chalk from 'chalk';
 import { createMigrateCommand } from './commands/migrate.js';
 import { createInteractiveCommand } from './commands/interactive.js';
 import { createScanCommand } from './commands/scan.js';
+import { createVerifyCommand } from './commands/verify.js';
 import { Banner, Colors } from './ui/index.js';
 import { FileOperations } from '@agent-sync/core';
 import * as path from 'path';
@@ -45,6 +46,7 @@ program
 program.addCommand(createMigrateCommand());
 program.addCommand(createInteractiveCommand());
 program.addCommand(createScanCommand());
+program.addCommand(createVerifyCommand());
 
 program
   .command('detect')

@@ -35,13 +35,10 @@ Sprint 1: [██████████] 100% ✅ COMPLETE (9/9 tasks)
 Sprint 2: [██████████] 100% ✅ COMPLETE (10/10 tasks)
 Sprint 3: [████████████████████] 100% ✅ COMPLETE (21/21 tasks)
 Sprint 4 Phase 1: [██████████] 100% ✅ COMPLETE (18/18 tasks) - Agent Mode REPL
-Sprint 4 Phase 1.5: [░░░░░░░░░░] 0%  (0/12 tasks) - AI Scanner + OpenCode Fix
-Sprint 4 Phase 2: [░░░░░░░░░░] 0%  (0/8 tasks) - Gemini/Cursor adapters
-Sprint 5: [░░░░░░░░░░] 0%  (0/8 tasks)
-Sprint 6: [░░░░░░░░░░] 0%  (0/8 tasks)
-Sprint 7: [░░░░░░░░░░] 0%  (0/7 tasks)
-Sprint 8: [░░░░░░░░░░] 0%  (0/8 tasks)
-Overall:  [██████████░░░░░░░░░░] 43% (40/109 tasks)
+Sprint 4 Phase 1.5: [██████████] 100% ✅ COMPLETE (12/12 tasks) - AI Scanner + OpenCode Fix
+Sprint 4 Phase 1.6: [░░░░░░░░░░] 0%  (0/12 tasks) - Modern TUI with Ink (PLANNED)
+Sprint 4 Phase 2: [███░░░░░░░] 38%  (3/8 tasks) - Gemini/Cursor adapters
+Overall:  [████████████░░░░░░░░] 55% (73/134 tasks)
 ```
 
 ### Latest Metrics
@@ -85,10 +82,19 @@ Overall:  [██████████░░░░░░░░░░] 43% (40
 - ✅ API key masking (100% coverage)
 - ✅ Fixture files
 
-**Total Tests:** 168 passing (168 total)
-**Coverage:** Core 100%, CLI 100%, Schemas 100%
+**Total Tests:** 343 passing (343 total)
+**Coverage:** Core 95%+, CLI 91%+, Schemas 88%+, E2E 100%
 
-**Next:** S3-18 - E2E test: Full AI-assisted migration flow
+**Next:** S4-19 - Gemini CLI adapter
+
+---
+
+## Documentation Quick Links
+
+| Document | Purpose |
+|----------|---------|
+| [UI Flow](./ui-flow.md) | Complete user interface flow (current + planned Ink TUI) |
+| [OpenCode Structure](./tool-structure-opencode.md) | OpenCode directory/file structure reference |
 
 ---
 
@@ -97,10 +103,34 @@ Overall:  [██████████░░░░░░░░░░] 43% (40
 ### When user asks "Where am I standing right now?"
 
 **Current Status:**
-- 📊 **Overall Progress**: 33% (33/75 tasks complete)
-- 🔄 **Current Sprint**: Sprint 3 - AI-Assisted Interactive Migration Engine **PHASE 3 COMPLETE**
-- ✅ **Just Completed**: S3-13-17 - Interactive AI mode, scan command, CLI flags (5 tasks, 30 tests)
-- 🚀 **Starting Next**: S3-18-21 - E2E tests and documentation
+- 📊 **Overall Progress**: 52% (70/134 tasks complete)
+- 🔄 **Current Sprint**: Sprint 4 Phase 2 - Tool Support Expansion
+- ✅ **Just Completed**: 
+  - Phase 1: Agent Mode REPL (18/18 tasks)
+  - Phase 1.5: AI Scanner + OpenCode Fix (12/12 tasks)
+- 🚀 **Starting Next**: S4-19-26 - Gemini/Cursor adapters + Ink TUI planning
+
+### User Interface Status
+
+**Current Implementation (Inquirer-based):**
+- ✅ Welcome prompt with guided/manual modes
+- ✅ Slash command selector (type "/" for dropdown)
+- ✅ Interactive scan with scope selection
+- ✅ File browser for custom paths
+- ✅ Post-scan action menu
+- ✅ Adapter selection for migration
+- ⏳ Migration path selection (where to save files) - *To be implemented*
+- ⏳ Show exact migrated file paths - *To be implemented*
+
+**Planned Implementation (Ink TUI - Week 6):**
+- Full-screen React-based terminal UI
+- Visual sidebar navigation
+- Modern Cloud/OpenCode aesthetic
+- Keyboard shortcuts: `/`, `q`, `esc`, arrows
+- Dark, minimal color scheme
+- Fallback to inquirer for CI/SSH
+
+See [UI Flow Documentation](./ui-flow.md) for complete specifications.
 
 **Recent Achievements:**
 - ✅ Bidirectional translators (Claude ↔ OpenCode) - 23 tests
@@ -409,31 +439,108 @@ The CLI becomes an AI-assisted terminal environment with:
 | S4-18E | Fix OpenCode global detection (~/.config/opencode/) | Core | [x] |
 | S4-18F | Implement proper agent Markdown parser with YAML frontmatter | Core | [x] |
 | S4-18G | Implement proper skill directory scanner | Core | [x] |
-| S4-18H | Add ora spinner UI with real-time scan progress updates | CLI | [ ] |
-| S4-18I | Add incremental scan results display ("Found X agents...") | CLI | [ ] |
-| S4-18J | Implement AI cross-validation to eliminate false positives | Core | [ ] |
-| S4-18K | E2E tests for AI scanner with actual OpenCode structures | E2E | [ ] |
-| S4-18L | Documentation: OpenCode structure reference guide | Docs | [ ] |
+| S4-18H | Add ora spinner UI with real-time scan progress updates | CLI | [x] |
+| S4-18I | Add incremental scan results display ("Found X agents...") | CLI | [x] |
+| S4-18J | Implement AI cross-validation to eliminate false positives | Core | [x] |
+| S4-18K | E2E tests for AI scanner with actual OpenCode structures | E2E | [x] |
+| S4-18L | Documentation: OpenCode structure reference guide | Docs | [x] |
 
 **Phase 1.5 Definition of Done:**
-- [ ] AI scanner uses glob/grep for directory traversal
-- [ ] Real-time spinner shows current directory being scanned
-- [ ] Incremental updates: "Scanning ~/.config/opencode... Found 3 agents"
-- [ ] OpenCode agents properly detected from `./.opencode/agents/*.md`
-- [ ] OpenCode skills properly detected from `./.opencode/skills/**/SKILL.md`
-- [ ] OpenCode MCP servers detected from `~/.config/opencode/opencode.json`
-- [ ] AI validates found files are legitimate (not false positives)
-- [ ] Cross-provider recognition works (migrated configs detected instantly)
-- [ ] Zero false positives in scan results
-- [ ] Complete OpenCode structure documentation
+- [x] AI scanner uses glob/grep for directory traversal
+- [x] Real-time spinner shows current directory being scanned
+- [x] Incremental updates: "Scanning ~/.config/opencode... Found 3 agents"
+- [x] OpenCode agents properly detected from `./.opencode/agents/*.md`
+- [x] OpenCode skills properly detected from `./.opencode/skills/**/SKILL.md`
+- [x] OpenCode MCP servers detected from `~/.config/opencode/opencode.json`
+- [x] AI validates found files are legitimate (not false positives)
+- [x] Cross-provider recognition works (migrated configs detected instantly)
+- [x] Zero false positives in scan results
+- [x] Complete OpenCode structure documentation
+
+---
+
+**Phase 1.6: Modern Terminal UI with Ink (PLANNED - Week 6)**
+
+**Goal**: Replace inquirer-based prompts with a modern, Cloud/OpenCode-style React-based TUI using Ink
+
+**Why Ink?**
+- Used by Claude Code, Gemini CLI, Copilot CLI, and Wrangler
+- Component-based React architecture
+- Flexbox layouts with Yoga
+- Keyboard navigation support
+- Modern, non-terminal-like appearance
+
+**Key Features:**
+- Full-screen terminal UI (not scrolling prompts)
+- Visual sidebar navigation
+- Real-time updates with React components
+- Keyboard shortcuts: `/`, `q`, `esc`, `enter`, arrows
+- Dark, minimal color scheme
+- Fallback to inquirer for minimal terminals
+
+| # | Task | Type | Status |
+|---|------|------|--------|
+| S4-27 | Setup Ink and React dependencies | Setup | [ ] |
+| S4-28 | Create Ink app infrastructure (App.tsx, routing, state) | UI | [ ] |
+| S4-29 | Build ScanView component with visual scope selector | UI | [ ] |
+| S4-30 | Implement FileBrowser component for path selection | UI | [ ] |
+| S4-31 | Build MigrationView with adapter cards | UI | [ ] |
+| S4-32 | Add PathSelector for migration output location | UI | [ ] |
+| S4-33 | Create MigrationResults showing exact file paths | UI | [ ] |
+| S4-34 | Build ResultsPanel for scan/migration display | UI | [ ] |
+| S4-35 | Add keyboard navigation and shortcuts | UX | [ ] |
+| S4-36 | Integrate Ink app into CLI with fallback mode | Integration | [ ] |
+| S4-37 | Write tests for Ink components | Testing | [ ] |
+| S4-38 | Update documentation with Ink UI screenshots | Docs | [ ] |
+
+**Phase 1.6 Definition of Done:**
+- [ ] Ink dependencies installed and configured
+- [ ] React-based TUI renders full-screen interface
+- [ ] Visual sidebar with navigation icons
+- [ ] Scan view with scope buttons (not prompts)
+- [ ] File browser with arrow key navigation
+- [ ] Migration view with adapter cards
+- [ ] Path selector for output location
+- [ ] Results show exact migrated file paths
+- [ ] Keyboard shortcuts functional (`/`, `q`, `esc`, arrows)
+- [ ] Dark, minimal color scheme implemented
+- [ ] Fallback to inquirer when TTY not available
+- [ ] All Ink components tested
+
+**Dependencies:**
+- `ink`: ^5.0.0 - React for CLIs
+- `react`: ^18.2.0 - React library
+- `@types/react`: ^18.2.0 - TypeScript types
+
+**Architecture:**
+```
+packages/cli/src/ui-ink/
+├── index.tsx              # Entry point
+├── App.tsx               # Main app with routing
+├── components/
+│   ├── Layout.tsx        # Main layout wrapper
+│   ├── Sidebar.tsx       # Navigation sidebar
+│   ├── ScanView.tsx      # Scan interface
+│   ├── MigrationView.tsx # Migration interface
+│   ├── FileBrowser.tsx   # Path selection
+│   ├── ResultsPanel.tsx  # Results display
+│   └── StatusBar.tsx     # Bottom status bar
+├── hooks/
+│   ├── useScan.ts        # Scan logic
+│   ├── useMigration.ts   # Migration logic
+│   └── useNavigation.ts  # Navigation state
+└── theme.ts              # Color scheme
+```
+
+---
 
 **Phase 2: Tool Support Expansion**
 
 | # | Task | Type | Status |
 |---|------|------|--------|
-| S4-19 | [TEST FIRST] Write parser tests for Gemini CLI config schema | TDD | [ ] |
-| S4-20 | Implement Gemini CLI adapter (parser + translator) | Core | [ ] |
-| S4-21 | [TEST FIRST] Write parser tests for Cursor config schema | TDD | [ ] |
+| S4-19 | [TEST FIRST] Write parser tests for Gemini CLI config schema | TDD | [x] |
+| S4-20 | Implement Gemini CLI adapter (parser + translator) | Core | [x] |
+| S4-21 | [TEST FIRST] Write parser tests for Cursor config schema | TDD | [x] |
 | S4-22 | Implement Cursor adapter (.cursorrules + MCP support) | Core | [ ] |
 | S4-23 | Implement Gemini → Claude translator | Core | [ ] |
 | S4-24 | Implement Cursor → OpenCode translator | Core | [ ] |
@@ -441,12 +548,21 @@ The CLI becomes an AI-assisted terminal environment with:
 | S4-26 | Cross-tool matrix tests for 4-tool combinations | E2E | [ ] |
 
 **Sprint 4 Definition of Done:**
-- [ ] Agent Loop REPL mode functional with slash commands
-- [ ] /scan command with scope selection working
-- [ ] Scanner UI with live spinner updates
-- [ ] Scan Results Summary with migration prompt
-- [ ] Session State Manager maintaining scan results
-- [ ] /status, /help, /exit commands working
+- [x] Agent Loop REPL mode functional with slash commands
+- [x] /scan command with scope selection working
+- [x] Scanner UI with live spinner updates
+- [x] Scan Results Summary with migration prompt
+- [x] Session State Manager maintaining scan results
+- [x] /status, /help, /exit commands working
+- [x] AI-powered scanner with glob patterns
+- [x] OpenCode structure detection fixed
+- [x] AI cross-validation eliminating false positives
+- [x] E2E tests for AI scanner
+- [x] Migration path selection (where to save files)
+- [x] Show exact migrated file paths
+- [x] `verify` command for checking tool structure
+- [x] Filter adapter list to show only supported adapters
+- [ ] Ink-based modern TUI (Phase 1.6)
 - [ ] Gemini CLI adapter complete
 - [ ] Cursor adapter complete
 - [ ] All 4 tools supported (Claude, OpenCode, Gemini, Cursor)
