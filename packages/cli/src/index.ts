@@ -5,6 +5,7 @@ import { createMigrateCommand } from './commands/migrate.js';
 import { createInteractiveCommand } from './commands/interactive.js';
 import { createScanCommand } from './commands/scan.js';
 import { createVerifyCommand } from './commands/verify.js';
+import { createSyncCommand } from './commands/sync.js';
 import { Banner, Colors } from './ui/index.js';
 import { FileOperations } from '@agent-sync/core';
 import * as path from 'path';
@@ -50,6 +51,7 @@ program.addCommand(createMigrateCommand());
 program.addCommand(createInteractiveCommand());
 program.addCommand(createScanCommand());
 program.addCommand(createVerifyCommand());
+program.addCommand(createSyncCommand());
 
 // Add TUI command
 program
