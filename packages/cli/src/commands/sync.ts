@@ -215,7 +215,7 @@ function displayChanges(changes: SyncChanges, currentResult: ScanResult): void {
   console.log(`  Configs: ${currentResult.configs.length}`);
   
   // Detected tools
-  const tools = [...new Set(currentResult.files.map(f => f.tool).filter(Boolean))];
+  const tools = [...new Set(currentResult.files.map(f => f.tool).filter((t): t is string => typeof t === 'string'))];
   if (tools.length > 0) {
     console.log(`  Tools: ${tools.map(t => getToolIcon(t)).join(' ')}`);
   }
@@ -236,7 +236,7 @@ function displayInitialScan(result: ScanResult): void {
   console.log(`  Configs: ${result.configs.length}`);
 
   // Detected tools
-  const tools = [...new Set(result.files.map(f => f.tool).filter(Boolean))];
+  const tools = [...new Set(result.files.map(f => f.tool).filter((t): t is string => typeof t === 'string'))];
   if (tools.length > 0) {
     console.log(`  Tools detected: ${tools.map(t => `${getToolIcon(t)} ${t}`).join(', ')}`);
   }
