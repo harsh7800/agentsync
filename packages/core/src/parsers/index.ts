@@ -17,6 +17,10 @@ export { OpenCodeSkillParser } from './opencode/parsers/skill.parser.js';
 export { OpenCodeMCPParser } from './opencode/parsers/mcp.parser.js';
 export { OpenCodeConfigParser } from './opencode/parsers/config.parser.js';
 
+// Common Schema Normalizers & Adapters (NEW)
+export { OpenCodeNormalizer, createOpenCodeNormalizer } from './opencode/normalizer.js';
+export { OpenCodeAdapter, createOpenCodeAdapter } from './opencode/adapter.js';
+
 // Legacy parsers (for backward compatibility)
 export { ClaudeParser } from './claude.parser.js';
 export { OpenCodeParser } from './opencode.parser.js';
