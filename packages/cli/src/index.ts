@@ -6,6 +6,7 @@ import { createInteractiveCommand } from './commands/interactive.js';
 import { createScanCommand } from './commands/scan.js';
 import { createVerifyCommand } from './commands/verify.js';
 import { createSyncCommand } from './commands/sync.js';
+import { createUpdateCommand } from './commands/update.js';
 import { Banner, Colors } from './ui/index.js';
 import { FileOperations } from '@agent-sync/core';
 import * as path from 'path';
@@ -13,6 +14,9 @@ import * as os from 'os';
 
 // Import Ink TUI
 import { canRenderInk, renderInkApp } from './ui-ink/index.js';
+
+// Import version checker
+import { checkForUpdate, displayUpdateNotification } from './utils/version-checker.js';
 
 // Export interactive components
 export { InteractiveConflictResolver } from './interactive/conflict-resolver.js';
@@ -41,10 +45,22 @@ if (noArgsProvided || (!args[0]?.startsWith('-') && args[0] !== 'migrate')) {
   Banner.show();
 }
 
+// Check for updates (non-blocking)
+if (noArgsProvided) {
+  // Only check for updates in interactive mode
+  checkForUpdate().then(updateInfo => {
+    if (updateInfo.updateAvailable) {
+      displayUpdateNotification(updateInfo);
+    }
+  }).catch(() => {
+    // Silently fail if update check fails
+  });
+}
+
 program
   .name('agentsync')
   .description('AI-assisted CLI for migrating AI tool configurations')
-  .version('1.0.0');
+  .version('1.1.0');
 
 // Add commands
 program.addCommand(createMigrateCommand());
@@ -52,6 +68,7 @@ program.addCommand(createInteractiveCommand());
 program.addCommand(createScanCommand());
 program.addCommand(createVerifyCommand());
 program.addCommand(createSyncCommand());
+program.addCommand(createUpdateCommand());
 
 // Add TUI command
 program
@@ -91,6 +108,7 @@ program
       const { statusHandler } = await import('./interactive/commands/status.js');
       const { helpHandler } = await import('./interactive/commands/help.js');
       const { exitHandler } = await import('./interactive/commands/exit.js');
+      const updateCommand = await import('./interactive/commands/update.js');
 
       const agentLoop = new AgentLoop();
 
@@ -107,6 +125,14 @@ program
         description: 'Show current session state',
         usage: '/status',
         execute: statusHandler
+      });
+
+      agentLoop.registerCommand({
+        name: 'update',
+        description: updateCommand.description,
+        usage: '/update',
+        aliases: [updateCommand.shortcut],
+        execute: updateCommand.execute
       });
 
       agentLoop.registerCommand({
