@@ -1,218 +1,199 @@
-/**
- * FileBrowser Component
- * Navigate directories with arrow keys for path selection
- */
-
-import React, { useState, useEffect, useCallback } from 'react';
-import { Box, Text } from 'ink';
+import React, { useState, useCallback, useEffect } from 'react';
+import { Box, Text, useInput, useApp } from 'ink';
 import { readdirSync, statSync, existsSync } from 'fs';
 import { join, dirname, basename } from 'path';
 import { homedir } from 'os';
 
 interface FileBrowserProps {
-  /** Initial path to start from */
   initialPath?: string;
-  /** Whether to select files or directories */
-  selectType?: 'file' | 'directory' | 'both';
-  /** Callback when path is selected */
   onSelect: (path: string) => void;
-  /** Callback when cancelled */
   onCancel: () => void;
-  /** Filter function for items */
-  filter?: (name: string, isDirectory: boolean) => boolean;
+  title?: string;
 }
 
-interface FileItem {
+interface FileEntry {
   name: string;
   path: string;
   isDirectory: boolean;
-  isParent: boolean;
+  isSelected: boolean;
 }
 
-export function FileBrowser({
-  initialPath = homedir(),
-  selectType = 'directory',
-  onSelect,
+export function FileBrowser({ 
+  initialPath = process.cwd(), 
+  onSelect, 
   onCancel,
-  filter,
+  title = 'Select Directory'
 }: FileBrowserProps): React.ReactElement {
+  const { exit } = useApp();
   const [currentPath, setCurrentPath] = useState(initialPath);
-  const [items, setItems] = useState<FileItem[]>([]);
+  const [entries, setEntries] = useState<FileEntry[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState('');
 
-  // Load directory contents
-  useEffect(() => {
+  const loadDirectory = useCallback((path: string) => {
     try {
-      if (!existsSync(currentPath)) {
-        setError(`Path does not exist: ${currentPath}`);
-        setItems([]);
+      if (!existsSync(path)) {
+        setError(`Path does not exist: ${path}`);
         return;
       }
 
-      const stats = statSync(currentPath);
-      if (!stats.isDirectory()) {
-        setError(`Not a directory: ${currentPath}`);
-        setItems([]);
-        return;
-      }
+      const items = readdirSync(path, { withFileTypes: true });
+      const fileEntries: FileEntry[] = [];
 
-      setError(null);
-      const entries = readdirSync(currentPath, { withFileTypes: true });
-      
-      // Build items list with parent directory
-      const fileItems: FileItem[] = [
-        { name: '..', path: dirname(currentPath), isDirectory: true, isParent: true },
-      ];
-
-      // Add directories first
-      entries
-        .filter(entry => entry.isDirectory())
-        .filter(entry => !filter || filter(entry.name, true))
-        .sort((a, b) => a.name.localeCompare(b.name))
-        .forEach(entry => {
-          fileItems.push({
-            name: entry.name,
-            path: join(currentPath, entry.name),
-            isDirectory: true,
-            isParent: false,
-          });
+      // Add ".." entry if not at root
+      if (path !== homedir() && path !== '/') {
+        fileEntries.push({
+          name: '..',
+          path: dirname(path),
+          isDirectory: true,
+          isSelected: false
         });
-
-      // Add files if selecting files
-      if (selectType === 'file' || selectType === 'both') {
-        entries
-          .filter(entry => entry.isFile())
-          .filter(entry => !filter || filter(entry.name, false))
-          .sort((a, b) => a.name.localeCompare(b.name))
-          .forEach(entry => {
-            fileItems.push({
-              name: entry.name,
-              path: join(currentPath, entry.name),
-              isDirectory: false,
-              isParent: false,
-            });
-          });
       }
 
-      setItems(fileItems);
+      // Sort directories first, then files
+      const dirs = items
+        .filter(item => item.isDirectory())
+        .sort((a, b) => a.name.localeCompare(b.name));
+      
+      const files = items
+        .filter(item => !item.isDirectory())
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+      // Add directories
+      dirs.forEach(dir => {
+        fileEntries.push({
+          name: dir.name + '/',
+          path: join(path, dir.name),
+          isDirectory: true,
+          isSelected: false
+        });
+      });
+
+      // Add files (optional - for visibility)
+      files.forEach(file => {
+        fileEntries.push({
+          name: file.name,
+          path: join(path, file.name),
+          isDirectory: false,
+          isSelected: false
+        });
+      });
+
+      setEntries(fileEntries);
       setSelectedIndex(0);
+      setError('');
     } catch (err) {
-      setError(`Error reading directory: ${err instanceof Error ? err.message : 'Unknown error'}`);
-      setItems([]);
+      setError(`Cannot read directory: ${err instanceof Error ? err.message : String(err)}`);
+      setEntries([]);
     }
-  }, [currentPath, selectType, filter]);
+  }, []);
 
-  // Handle keyboard navigation
   useEffect(() => {
-    const handleKeyPress = (key: string) => {
-      switch (key) {
-        case 'up':
-          setSelectedIndex(prev => Math.max(0, prev - 1));
-          break;
-        case 'down':
-          setSelectedIndex(prev => Math.min(items.length - 1, prev + 1));
-          break;
-        case 'return':
-        case 'enter':
-          if (items[selectedIndex]) {
-            const item = items[selectedIndex];
-            if (item.isDirectory) {
-              if (selectType === 'directory' || selectType === 'both') {
-                // Allow selecting directories
-                setCurrentPath(item.path);
-              } else {
-                // Just navigate into directory
-                setCurrentPath(item.path);
-              }
-            } else {
-              // Select file
-              onSelect(item.path);
-            }
-          }
-          break;
-        case 'space':
-          // Select current item and confirm
-          if (items[selectedIndex] && (selectType === 'directory' || selectType === 'both')) {
-            const item = items[selectedIndex];
-            if (item.isDirectory && !item.isParent) {
-              onSelect(item.path);
-            }
-          }
-          break;
-        case 'escape':
-        case 'q':
-          onCancel();
-          break;
+    loadDirectory(currentPath);
+  }, [currentPath, loadDirectory]);
+
+  useInput((input, key) => {
+    if (key.upArrow) {
+      setSelectedIndex(prev => Math.max(0, prev - 1));
+    } else if (key.downArrow) {
+      setSelectedIndex(prev => Math.min(entries.length - 1, prev + 1));
+    } else if (key.return) {
+      const selected = entries[selectedIndex];
+      if (selected) {
+        if (selected.isDirectory) {
+          setCurrentPath(selected.path);
+        } else {
+          // Selected a file, use its directory
+          onSelect(dirname(selected.path));
+        }
       }
-    };
+    } else if (key.tab) {
+      // Select current directory
+      onSelect(currentPath);
+    } else if (key.escape || input === 'q') {
+      onCancel();
+    } else if (input === 'h') {
+      // Go to home
+      setCurrentPath(homedir());
+    } else if (input === 'r') {
+      // Go to root
+      setCurrentPath(process.platform === 'win32' ? 'C:\\' : '/');
+    } else if (input === 'c') {
+      // Go to current working directory
+      setCurrentPath(process.cwd());
+    }
+  });
 
-    // Note: In a real implementation, you'd use ink's useInput hook
-    // This is a simplified version for the structure
-    return () => {};
-  }, [items, selectedIndex, selectType, onSelect, onCancel]);
-
-  // Format path for display
-  const displayPath = currentPath.replace(homedir(), '~');
+  const visibleEntries = entries.slice(0, 15); // Show max 15 items
+  const hasMore = entries.length > 15;
 
   return (
-    <Box flexDirection="column" flexGrow={1}>
-      {/* Header */}
+    <Box flexDirection="column" padding={1}>
+      {/* Title */}
       <Box marginBottom={1}>
-        <Text bold color="blue">
-          📂 File Browser
-        </Text>
+        <Text bold color="cyan">{title}</Text>
       </Box>
 
       {/* Current Path */}
-      <Box marginBottom={1}>
-        <Text color="gray">Location: </Text>
-        <Text color="white" wrap="end">
-          {displayPath}
-        </Text>
+      <Box 
+        borderStyle="single" 
+        borderColor="gray" 
+        paddingX={1}
+        marginBottom={1}
+      >
+        <Text color="gray">Path: </Text>
+        <Text color="white">{currentPath}</Text>
       </Box>
 
-      {/* Error Message */}
+      {/* Error */}
       {error && (
         <Box marginBottom={1}>
-          <Text color="red">⚠ {error}</Text>
+          <Text color="red">{error}</Text>
         </Box>
       )}
 
-      {/* Instructions */}
-      <Box marginBottom={1}>
-        <Text color="gray" dimColor>
-          ↑↓ Navigate • Enter: Open/Select • Space: Select Dir • Esc: Cancel
-        </Text>
-      </Box>
-
       {/* File List */}
-      <Box flexDirection="column" flexGrow={1} overflow="hidden">
-        {items.map((item, index) => {
+      <Box flexDirection="column" marginY={1}>
+        {visibleEntries.map((entry, index) => {
           const isSelected = index === selectedIndex;
-          const icon = item.isParent 
-            ? '⬆' 
-            : item.isDirectory 
-              ? '📁' 
-              : '📄';
-          
           return (
-            <Box key={item.path}>
-              <Text
-                backgroundColor={isSelected ? 'blue' : undefined}
-                color={isSelected ? 'white' : item.isDirectory ? 'cyan' : 'white'}
-              >
-                {' '}{icon} {item.name}{item.isDirectory ? '/' : ''}{' '}
+            <Box key={entry.path}>
+              <Text color={isSelected ? 'cyan' : 'white'}>
+                {isSelected ? '▸ ' : '  '}
+                <Text bold={isSelected}>
+                  {entry.isDirectory ? '📁 ' : '📄 '}
+                  {entry.name}
+                </Text>
               </Text>
             </Box>
           );
         })}
+        
+        {hasMore && (
+          <Box marginLeft={2}>
+            <Text color="gray">... and {entries.length - 15} more items</Text>
+          </Box>
+        )}
+
+        {entries.length === 0 && !error && (
+          <Box>
+            <Text color="gray">(empty directory)</Text>
+          </Box>
+        )}
       </Box>
 
-      {/* Footer */}
+      {/* Shortcuts */}
+      <Box marginTop={1} flexDirection="column">
+        <Text color="gray">Shortcuts:</Text>
+        <Box marginLeft={2}>
+          <Text color="gray">h - Home  •  r - Root  •  c - Current Dir</Text>
+        </Box>
+      </Box>
+
+      {/* Instructions */}
       <Box marginTop={1}>
-        <Text color="gray" dimColor>
-          {items.length - 1} items • {selectType === 'directory' ? 'Select a directory' : 'Select a file'}
+        <Text color="gray">
+          ↑↓ Navigate  •  Enter Open/Select  •  Tab Select Current  •  Esc Cancel
         </Text>
       </Box>
     </Box>

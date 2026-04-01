@@ -56,9 +56,9 @@ export function PathSelector({
     return (
       <FileBrowser
         initialPath={process.cwd()}
-        selectType="directory"
         onSelect={handleBrowserSelect}
         onCancel={() => setStep('preset')}
+        title="Select output directory"
       />
     );
   }
