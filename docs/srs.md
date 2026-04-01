@@ -2,7 +2,7 @@
 
 ## Software Requirements Specification
 
-**Version 1.0 | March 2026**
+**Version 2.0 | April 2026**
 
 **Status: Draft**
 
@@ -10,11 +10,11 @@
 | --- | --- |
 | Project Name | AgentSync CLI |
 | Document Type | Software Requirements Specification (SRS) |
-| Version | 1.0 |
+| Version | 2.0 |
 | Language / Runtime | Node.js / TypeScript |
 | Target Tools (v1) | Claude Code, Gemini CLI, GitHub Copilot CLI, OpenCode, Cursor |
 | Author | Internal Engineering Team |
-| Date | March 2026 |
+| Date | April 2026 |
 
 ---
 
@@ -22,265 +22,325 @@
 
 ### 1.1 Purpose
 
-This document defines the software requirements for AgentSync CLI — an AI-assisted command-line tool that migrates AI agent configurations, MCP (Model Context Protocol) server definitions, custom skills, and masked API credentials between popular AI development tools. It serves as the single source of truth for design, development, and testing decisions throughout the project lifecycle.
+This document defines the software requirements for AgentSync CLI — an **AI-assisted terminal environment** that migrates AI agent configurations between popular AI development tools. It serves as the single source of truth for design, development, and testing decisions throughout the project lifecycle.
 
 ### 1.2 Problem Statement
 
-Development teams adopting AI-first and TDD workflows face a critical friction point: each AI CLI tool (Claude Code, Gemini CLI, GitHub Copilot CLI, OpenCode, Cursor) stores its configuration in incompatible formats and locations. When a developer switches tools or a team standardizes on a new platform, they must manually recreate:
+Development teams adopting AI-first workflows face a critical friction point: each AI CLI tool stores its configuration in incompatible formats. When switching tools, developers must manually recreate configurations. AgentSync solves this by providing:
 
-- MCP server definitions and connection parameters
-- Custom agents and skill configurations
-- API keys and credentials (with risk of accidental exposure)
-- Tool-specific prompts and context files
-
-This manual process is error-prone, time-consuming, and creates inconsistency across team members — directly undermining the productivity goals of an AI-first engineering culture.
+1. **Automated migration** between tool formats
+2. **Agent Mode** — An interactive terminal environment for managing AI configurations
+3. **AI-assisted mapping** for complex transformations
 
 ### 1.3 Scope
 
-**AgentSync CLI v1 will:**
+**AgentSync CLI v2 will:**
 
 - Support bidirectional migration between all five target tools
+- Provide **Agent Mode** — A persistent REPL with slash commands
 - Migrate MCP configurations, custom agents/skills, and API keys (masked)
+- Maintain session state across interactions
 - Run entirely locally — no data leaves the machine without explicit opt-in
 - Be built in TypeScript for Node.js
-- Ship as an open source CLI with potential future SaaS team-sync capability
-- Support both command mode and AI-assisted interactive mode
+- Ship as an open source CLI
 
-**Out of scope for v1:**
+**Out of scope for v2:**
 
 - Cloud sync or team sharing features
 - Non-CLI AI tools (e.g., web-based IDEs)
-- Automated schema update via documentation scraping (planned for v2)
-
-### 1.4 Definitions
-
-| Term | Definition |
-| --- | --- |
-| MCP | Model Context Protocol — a standard for connecting AI agents to external tools and data sources |
-| Agent | A configured AI persona or workflow with specific instructions and tool access |
-| Skill | A reusable capability module attachable to an agent |
-| Schema Registry | A versioned store of config format definitions per tool per version |
-| Masked Key | An API key stored with sensitive characters replaced, preserving structure for validation |
-| Migration | The act of translating config from one tool's format to another's equivalent format |
-| AI Mapping | AI-assisted transformation of configurations that cannot be mapped deterministically |
+- Automated schema update via documentation scraping (planned for v3)
 
 ---
 
-## 2. Overall Description
+## 2. Product Modes
 
-### 2.1 Product Perspective
+### 2.1 Agent Mode (REPL) ⭐ PRIMARY
 
-AgentSync CLI operates as a standalone developer tool installed via npm. It reads configuration files from the source AI tool's known locations on the local filesystem, transforms them through a versioned schema registry, and writes the translated output to the target tool's expected locations. The tool does not require network access for core migration operations.
+The default mode when running `agentsync` without arguments.
 
-The tool uses an AI-assisted mapping engine to handle configuration transformations that cannot be done deterministically, following the architecture pipeline defined in [Project Context](./project-context.md).
+**Characteristics:**
+- Persistent interactive session (REPL-style)
+- Slash commands (/scan, /migrate, /status, /help, /exit)
+- Session state maintained across commands
+- Live UI with spinners and progress updates
+- Structured scan results
+- Step-by-step guided workflows
 
-### 2.2 Target Users
+**Example Session:**
+```bash
+$ agentsync
 
-- Individual developers switching between AI CLI tools
-- Engineering teams standardizing their AI workflow stack
-- DevOps engineers automating developer environment provisioning
-- Onboarding engineers setting up new team members in an AI-first workflow
+AgentSync Interactive Mode
 
-### 2.3 Supported Tool Matrix (v1)
+Type / to see available commands.
+Type /scan to scan for agents and tools.
+Type /migrate to start migration.
+Type /exit to quit.
 
-| Tool | Config Location | MCP Support | Agents/Skills | API Keys |
-| --- | --- | --- | --- | --- |
-| Claude Code | ~/.claude/ | Yes | Yes (.md skills) | Yes (.env) |
-| Gemini CLI | ~/.gemini/ | Yes | Partial | Yes |
-| GitHub Copilot CLI | ~/.config/gh-copilot/ | Partial | No (v1) | Yes |
-| OpenCode | ~/.opencode/ | Yes | Yes | Yes |
-| Cursor | ~/.cursor/ | Yes | Yes (.cursorrules) | Yes |
+> /scan
+Where would you like to scan?
+1. Current directory
+2. Entire system
+3. Custom path
+
+> 2
+
+Scanning directories...
+✔ Found Claude Code config
+✔ Found OpenCode agents
+✔ Found 3 agents, 12 skills
+
+Scan Complete. Would you like to migrate? (Yes/No)
+> Yes
+
+Select target tool:
+1. Claude Code
+2. OpenCode
+...
+```
+
+### 2.2 Command Mode
+
+Traditional one-shot CLI commands for scripting and automation.
+
+```bash
+agentsync migrate --from claude --to cursor
+agentsync detect
+agentsync rollback cursor
+```
 
 ---
 
 ## 3. Functional Requirements
 
-### 3.1 Core Migration
+### 3.1 Agent Mode Core
 
 | ID | Requirement | Description | Priority |
 | --- | --- | --- | --- |
-| FR-01 | Tool Detection | CLI auto-detects installed AI tools by scanning known config paths and reports what it finds before migration | High |
-| FR-02 | Migration Wizard | Interactive prompt: select source tool, target tool, and which config types to migrate (MCP / agents / keys) | High |
-| FR-03 | MCP Config Migration | Parse and translate MCP server definitions from source format to target format using schema registry | High |
-| FR-04 | Agent / Skill Migration | Map custom agents and skill files to their nearest equivalent in the target tool's format | High |
-| FR-05 | API Key Masking | Copy API key entries with sensitive characters replaced (e.g. sk-***...***) and warn user to re-enter real values | High |
-| FR-06 | Dry Run Mode | Flag --dry-run shows what would be written without modifying any files | High |
-| FR-07 | Backup Before Write | Automatically back up target tool's existing config to ~/.agentsync/backups/ before overwriting | High |
-| FR-08 | Rollback | Command agentsync rollback restores the most recent backup for a given target tool | Medium |
-| FR-09 | Migration Report | Post-migration summary: items migrated, items skipped, warnings, and keys requiring manual re-entry | Medium |
+| AGENT-01 | REPL Loop | CLI enters persistent REPL when run without arguments | High |
+| AGENT-02 | Slash Commands | All commands use / prefix (/scan, /migrate, /status, /help, /exit) | High |
+| AGENT-03 | Session State | Maintain state across commands (scanned tools, agents, MCPs) | High |
+| AGENT-04 | Command Registry | Pluggable command system for adding new slash commands | Medium |
+| AGENT-05 | Graceful Exit | /exit command cleanly shuts down, preserving state | Medium |
 
-### 3.2 Schema Registry
+### 3.2 Scan Command
 
 | ID | Requirement | Description | Priority |
 | --- | --- | --- | --- |
-| FR-10 | Local Schema Store | Versioned JSON schemas for each tool's config format stored locally at ~/.agentsync/schemas/ | High |
-| FR-11 | Schema Version Lock | Each migration records the schema versions used, enabling reproducibility and rollback | Medium |
-| FR-12 | Manual Schema Update | Command agentsync update-schemas checks GitHub releases of supported tools and prompts user to update | Medium |
+| SCAN-01 | Scope Selection | User chooses: Current directory, Entire system, or Custom path | High |
+| SCAN-02 | Live UI | Show spinner with dynamic messages during scan | High |
+| SCAN-03 | Progress Updates | Display incremental results as tools are found | High |
+| SCAN-04 | Structured Summary | Show formatted summary: tools, agents count, skills count, MCPs, paths | High |
+| SCAN-05 | Migration Prompt | After scan, prompt user to start migration workflow | High |
+| SCAN-06 | Session Storage | Store scan results in session for subsequent commands | High |
 
-### 3.3 AI-Assisted Features
-
-| ID | Requirement | Description | Priority |
-| --- | --- | --- | --- |
-| FR-13 | AI Mapping Engine | Use AI to convert configurations that cannot be mapped deterministically between tools | High |
-| FR-14 | Interactive AI Mode | Conversational interface allowing natural language migration commands | Medium |
-| FR-15 | AI Command Parsing | Parse natural language commands like "migrate claude to cursor" in interactive mode | Medium |
-| FR-16 | AI Isolation | AI mapping operates on data only — no direct file operations by AI | High |
-
-### 3.4 Security
+### 3.3 Slash Command System
 
 | ID | Requirement | Description | Priority |
 | --- | --- | --- | --- |
-| FR-17 | Local-Only by Default | No network requests during migration — all operations on local filesystem only | High |
-| FR-18 | Permission Prompt | Before scanning, CLI requests explicit user confirmation with a list of directories it will read | High |
-| FR-19 | Key Masking Enforcement | API keys are never written in plain text to any output config — always masked | High |
-| FR-20 | Backup Encryption (opt-in) | User may opt in to AES-256 encrypted backups via --encrypt-backups flag | Low |
+| CMD-01 | /help Command | Display available commands and usage hints | High |
+| CMD-02 | /scan Command | Start scanning workflow with scope selection | High |
+| CMD-03 | /migrate Command | Start migration workflow (uses session state if available) | High |
+| CMD-04 | /detect Command | Detect installed tools without full scan | Medium |
+| CMD-05 | /status Command | Display current session state | High |
+| CMD-06 | /exit Command | Exit Agent Mode cleanly | High |
+| CMD-07 | /clear Command | Clear terminal screen | Low |
+
+### 3.4 Session State Management
+
+| ID | Requirement | Description | Priority |
+| --- | --- | --- | --- |
+| STATE-01 | State Persistence | Maintain state for duration of Agent Mode session | High |
+| STATE-02 | State Contents | Store: scannedTools, detectedAgents, detectedSkills, detectedMCPs, scanPaths, selectedTargetTool | High |
+| STATE-03 | State Access | /status command displays all session data | High |
+| STATE-04 | State Reset | New /scan clears previous session state | Medium |
+
+### 3.5 Core Migration (Existing)
+
+| ID | Requirement | Description | Priority |
+| --- | --- | --- | --- |
+| MIG-01 | Tool Detection | CLI auto-detects installed AI tools | High |
+| MIG-02 | Migration Wizard | Interactive prompt for source/target selection | High |
+| MIG-03 | MCP Config Migration | Parse and translate MCP server definitions | High |
+| MIG-04 | Agent / Skill Migration | Map agents and skills to target format | High |
+| MIG-05 | API Key Masking | Mask sensitive API keys in output | High |
+| MIG-06 | Dry Run Mode | --dry-run shows what would change | High |
+| MIG-07 | Backup Before Write | Auto-backup target config before overwrite | High |
+
+### 3.6 Security
+
+| ID | Requirement | Description | Priority |
+| --- | --- | --- | --- |
+| SEC-01 | Local-Only by Default | No network requests during migration | High |
+| SEC-02 | Permission Prompt | Request explicit user confirmation before filesystem scan | High |
+| SEC-03 | Key Masking Enforcement | API keys never written in plain text | High |
 
 ---
 
-## 4. Non-Functional Requirements
+## 4. UI/UX Requirements
 
-| ID | Requirement | Description | Priority |
-| --- | --- | --- | --- |
-| NFR-01 | Performance | Full migration of all config types completes in under 10 seconds on any modern machine | High |
-| NFR-02 | Reliability | No partial writes — migration is atomic; either all target files are written or none | High |
-| NFR-03 | Cross-Platform | Supports macOS, Linux, and Windows (WSL) from day one | High |
-| NFR-04 | Testability | All transformation logic is pure functions with 100% unit test coverage (TDD) | High |
-| NFR-05 | Extensibility | New tool support can be added by adding a schema file and adapter — no core changes needed | Medium |
-| NFR-06 | Observability | Verbose mode --verbose logs every read/write operation with file paths and schema versions used | Medium |
-| NFR-07 | Offline Operation | Tool must work offline by default; AI mapping uses local models or is disabled when offline | High |
+### 4.1 Entry Experience
+
+```
+AgentSync Interactive Mode
+
+Type / to see available commands.
+Type /scan to scan for agents and tools.
+Type /migrate to start migration.
+Type /exit to quit.
+
+>
+```
+
+### 4.2 Scanning Experience
+
+Live updates with spinner:
+```
+Scanning ~/.claude...           [spinner]
+✔ Found Claude Code config
+Scanning ~/.config/opencode...  [spinner]
+✔ Found OpenCode agents
+Analyzing files...              [spinner]
+✔ Found 3 agents, 12 skills
+```
+
+### 4.3 Summary Display
+
+```
+═══════════════════════════════════
+         SCAN COMPLETE
+═══════════════════════════════════
+
+Tools Detected:
+  ✔ Claude Code
+  ✔ OpenCode
+
+Agents Found: 3
+  • backend-agent
+  • migration-agent
+  • ui-agent
+
+Skills Found: 12
+
+MCP Servers:
+  • filesystem
+  • terminal
+
+Locations:
+  ~/.claude/
+  ~/.config/opencode/
+```
 
 ---
 
 ## 5. CLI Interface Requirements
 
-### 5.1 Command Mode
+### 5.1 Agent Mode Commands
 
-The CLI shall support the following commands:
+| Command | Description |
+|---------|-------------|
+| `/` or `/help` | Show available commands |
+| `/scan` | Scan for agents and tools |
+| `/migrate` | Start migration workflow |
+| `/detect` | Detect installed tools |
+| `/status` | Show current session state |
+| `/clear` | Clear screen |
+| `/exit` | Exit Agent Mode |
+
+### 5.2 Command Mode
 
 ```bash
-# Migration commands
+# Migration
 agentsync migrate --from <source> --to <target> [--dry-run]
-agentsync migrate --from claude --to cursor --dry-run
 
-# Detection and inspection
+# Detection
 agentsync detect
 agentsync list-tools
 
 # Rollback
 agentsync rollback <tool>
-agentsync rollback cursor
 
 # Schema management
 agentsync update-schemas
 
-# Help
-agentsync --help
-agentsync migrate --help
+# Legacy interactive mode (deprecated)
+agentsync --legacy-interactive
 ```
-
-### 5.2 Interactive Mode (AI-Assisted)
-
-The CLI shall support an interactive mode for AI-assisted operation:
-
-```bash
-agentsync
-```
-
-Interactive prompt examples:
-
-```
-> migrate claude to cursor
-> show installed tools
-> rollback cursor
-> what would migrate from claude to gemini?
-> help
-> exit
-```
-
-Requirements for interactive mode:
-
-| ID | Requirement | Priority |
-| --- | --- | --- |
-| CLI-01 | Interactive prompt with command history | High |
-| CLI-02 | Natural language command parsing | Medium |
-| CLI-03 | Context-aware suggestions | Medium |
-| CLI-04 | Branded terminal UI with banner | Low |
 
 ---
 
-## 6. Constraints & Assumptions
+## 6. Non-Functional Requirements
 
-### 6.1 Constraints
-
-- Tool config schemas are subject to change by third-party vendors without notice
-- MCP is an evolving protocol; v1 support covers the stable MCP 1.0 spec only
-- GitHub Copilot CLI has limited programmatic config access; agent migration is out of scope for v1
-- No internet access assumed during migration (air-gapped environments must be supported)
-- AI assists migration but does not control file operations (per security principle #7)
-
-### 6.2 Assumptions
-
-- The user has at least one source tool installed and configured before running AgentSync
-- Config files follow documented formats; corrupted or manually edited files may fail gracefully with a warning
-- Node.js 18+ is available on the target machine
-- The user has read/write permissions to their own home directory config files
-
----
-
-## 7. Risk Register
-
-| Risk | Impact | Likelihood | Mitigation |
+| ID | Requirement | Description | Priority |
 | --- | --- | --- | --- |
-| Vendor changes config schema breaking migration | High | High | Schema versioning + update-schemas command |
-| Big vendor (Anthropic/Google) ships native migration tool | High | Medium | Focus on cross-vendor portability they won't build |
-| API key masking insufficient — partial key exposure | High | Low | Regex-based masking with full coverage tests |
-| Community fails to maintain open source schemas | Medium | Medium | Build schema auto-detection via AI diff (v2 roadmap) |
-| Low adoption outside the team | Medium | Medium | Ship internally first; open source after proven |
-| AI mapping produces incorrect configurations | Medium | Medium | Human review step before applying migrations |
-| Offline environments cannot use AI features | Low | High | Graceful degradation to deterministic-only mode |
+| NFR-01 | Performance | REPL responds to commands in < 100ms | High |
+| NFR-02 | Reliability | No partial writes — atomic migration | High |
+| NFR-03 | Cross-Platform | Supports macOS, Linux, Windows (WSL) | High |
+| NFR-04 | Testability | All transformation logic is pure functions | High |
+| NFR-05 | Extensibility | New tools via schema + adapter | Medium |
+| NFR-06 | Offline Operation | Works without internet | High |
 
 ---
 
-## 8. AI-Assisted Architecture
+## 7. Architecture
 
-Per the [Project Context](./project-context.md), the system follows a strict separation between AI-assisted mapping and file operations:
-
-### 8.1 Migration Pipeline
+### 7.1 Agent Mode Architecture
 
 ```
-Source Tool Config
-        ↓
-      Parser          (pure function)
-        ↓
-   Common Schema      (versioned internal representation)
-        ↓
-Deterministic Transform  (pure function)
-        ↓
-AI Mapping (if needed)   (isolated, operates on data only)
-        ↓
-      Adapter         (pure function)
-        ↓
-    Key Masking       (pure function)
-        ↓
-    File Writer       (CLI layer, no AI involvement)
-        ↓
-Target Tool Config
+┌─────────────────────────────────────────┐
+│           Agent Loop (REPL)              │
+│  ┌─────────────────────────────────────┐ │
+│  │ Input → Parse → Route → Execute    │ │
+│  └─────────────────────────────────────┘ │
+└─────────────────┬───────────────────────┘
+                  │
+┌─────────────────▼───────────────────────┐
+│         Slash Command Registry          │
+│  /scan → scanHandler                    │
+│  /migrate → migrateHandler              │
+│  /status → statusHandler                │
+└─────────────────┬───────────────────────┘
+                  │
+┌─────────────────▼───────────────────────┐
+│         Session State Manager           │
+│  scannedTools, agents, skills, MCPs     │
+└─────────────────────────────────────────┘
 ```
 
-### 8.2 AI Mapping Engine
+### 7.2 Migration Pipeline (Unchanged)
 
-The AI Mapping Engine is responsible for:
+```
+Source Config → Parser → Common Schema → AI Mapping → 
+Adapter → Key Masking → File Writer → Target Config
+```
 
-- Converting tool-specific concepts that have no direct equivalent
-- Suggesting alternative configurations when exact mapping is impossible
-- Providing explanations for non-deterministic transformations
+---
 
-The AI Mapping Engine is NOT responsible for:
+## 8. File Structure
 
-- File system operations
-- API key handling
-- Backup creation
-- Final configuration writes
+```
+packages/cli/
+├── src/
+│   ├── index.ts                    # Entry point
+│   ├── interactive/
+│   │   ├── agent-loop.ts          # REPL loop
+│   │   ├── command-registry.ts    # Slash command registry
+│   │   ├── session-state.ts       # Session state manager
+│   │   └── commands/
+│   │       ├── scan.ts            # /scan command
+│   │       ├── migrate.ts         # /migrate command
+│   │       ├── status.ts          # /status command
+│   │       ├── help.ts            # /help command
+│   │       └── exit.ts            # /exit command
+│   ├── ui/
+│   │   ├── scanner-ui.ts          # Scanning UI with ora
+│   │   ├── banner.ts              # Entry banner
+│   │   └── summary.ts             # Results summary
+│   └── commands/
+│       ├── migrate.ts             # Legacy migrate command
+│       ├── scan.ts                # Legacy scan command
+│       └── interactive.ts         # Legacy interactive command
+```
 
 ---
 
@@ -288,11 +348,12 @@ The AI Mapping Engine is NOT responsible for:
 
 - [Implementation Plan](./implementation-plan.md)
 - [Project Context](./project-context.md)
-- [Migration Flow](./migration-flow.md)
-- [AI Mapping Engine](./ai-mapping-engine.md)
-- [Security Model](./security-model.md)
 - [CLI Interface](./cli-interface.md)
+- [CLI UI & Branding](./cli-ui-branding.md)
+- [Migration Flow](./migration-flow.md)
+- [Architecture](./architecture.md)
+- [Security Model](./security-model.md)
 
 ---
 
-*Document End — AgentSync CLI SRS v1.0*
+*Document End — AgentSync CLI SRS v2.0*

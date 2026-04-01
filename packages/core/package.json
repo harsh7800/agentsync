@@ -1,6 +1,6 @@
 {
   "name": "@agent-sync/core",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Core transformation logic for AgentSync CLI - parsers, translators, and migration utilities",
   "type": "module",
   "main": "./dist/index.js",

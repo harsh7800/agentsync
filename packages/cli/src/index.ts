@@ -4,14 +4,31 @@ import chalk from 'chalk';
 import { createMigrateCommand } from './commands/migrate.js';
 import { createInteractiveCommand } from './commands/interactive.js';
 import { createScanCommand } from './commands/scan.js';
+import { createVerifyCommand } from './commands/verify.js';
+import { createSyncCommand } from './commands/sync.js';
 import { Banner, Colors } from './ui/index.js';
 import { FileOperations } from '@agent-sync/core';
 import * as path from 'path';
 import * as os from 'os';
 
+// Import Ink TUI
+import { canRenderInk, renderInkApp } from './ui-ink/index.js';
+
 // Export interactive components
 export { InteractiveConflictResolver } from './interactive/conflict-resolver.js';
 export { InteractiveMappingPrompts } from './interactive/mapping-prompts.js';
+
+// Export Agent Mode components
+export { AgentLoop } from './interactive/agent-loop.js';
+export { CommandRegistry } from './interactive/command-registry.js';
+export { SessionStateManager, createSessionState } from './interactive/session-state.js';
+export { scanHandler } from './interactive/commands/scan.js';
+export { statusHandler } from './interactive/commands/status.js';
+export { helpHandler } from './interactive/commands/help.js';
+export { exitHandler } from './interactive/commands/exit.js';
+
+// Export types
+export type { SlashCommand, CommandContext, CommandResult, SessionState } from './interactive/types.js';
 
 const program = new Command();
 
@@ -33,6 +50,84 @@ program
 program.addCommand(createMigrateCommand());
 program.addCommand(createInteractiveCommand());
 program.addCommand(createScanCommand());
+program.addCommand(createVerifyCommand());
+program.addCommand(createSyncCommand());
+
+// Add TUI command
+program
+  .command('tui')
+  .description('Launch modern terminal UI (Ink-based)')
+  .option('--no-ink', 'Force inquirer-based UI even if TTY is available')
+  .action(async (options) => {
+    // Check if we can render Ink UI
+    const useInk = options.ink !== false && canRenderInk();
+
+    if (useInk) {
+      console.log(chalk.gray('Starting modern terminal UI...\n'));
+
+      // Render Ink TUI
+      const cleanup = renderInkApp({
+        initialRoute: 'scan',
+      });
+
+      // Handle graceful shutdown
+      process.on('SIGINT', () => {
+        cleanup();
+        process.exit(0);
+      });
+
+      process.on('SIGTERM', () => {
+        cleanup();
+        process.exit(0);
+      });
+    } else {
+      // Fall back to agent mode with inquirer
+      console.log(chalk.yellow('TTY not available or --no-ink flag used.'));
+      console.log(chalk.gray('Falling back to agent mode...\n'));
+
+      // Launch agent mode (same as no-args behavior)
+      const { AgentLoop } = await import('./interactive/agent-loop.js');
+      const { scanHandler } = await import('./interactive/commands/scan.js');
+      const { statusHandler } = await import('./interactive/commands/status.js');
+      const { helpHandler } = await import('./interactive/commands/help.js');
+      const { exitHandler } = await import('./interactive/commands/exit.js');
+
+      const agentLoop = new AgentLoop();
+
+      // Register commands
+      agentLoop.registerCommand({
+        name: 'scan',
+        description: 'Scan for agents and tools',
+        usage: '/scan [current|system|custom]',
+        execute: scanHandler
+      });
+
+      agentLoop.registerCommand({
+        name: 'status',
+        description: 'Show current session state',
+        usage: '/status',
+        execute: statusHandler
+      });
+
+      agentLoop.registerCommand({
+        name: 'help',
+        description: 'Show available commands',
+        usage: '/help',
+        aliases: ['h'],
+        execute: helpHandler
+      });
+
+      agentLoop.registerCommand({
+        name: 'exit',
+        description: 'Exit Agent Mode',
+        usage: '/exit',
+        aliases: ['quit', 'q'],
+        execute: exitHandler
+      });
+
+      await agentLoop.start();
+    }
+  });
 
 program
   .command('detect')
@@ -142,13 +237,86 @@ program.on('--help', () => {
   Banner.showMinimal();
 });
 
-// If no args provided, launch interactive mode
+// Import types for Agent Mode
+import type { SlashCommand } from './interactive/types.js';
+
+// If no args provided, launch Ink TUI (or fall back to Agent Mode)
 if (noArgsProvided) {
   setTimeout(async () => {
-    const interactiveCmd = createInteractiveCommand();
-    const interactiveProgram = new Command();
-    interactiveProgram.addCommand(interactiveCmd);
-    await interactiveProgram.parseAsync(['node', 'agentsync', 'interactive']);
+    // Check if Ink TUI can be rendered
+    if (canRenderInk()) {
+      // Render modern Ink TUI
+      const cleanup = renderInkApp({
+        initialRoute: 'scan',
+      });
+
+      // Handle graceful shutdown - don't call process.exit()
+      // Let Ink handle the cleanup properly
+      process.on('SIGINT', () => {
+        cleanup();
+        // Don't call process.exit() here - let Ink exit gracefully
+      });
+
+      process.on('SIGTERM', () => {
+        cleanup();
+        // Don't call process.exit() here - let Ink exit gracefully
+      });
+    } else {
+      // Fall back to Agent Mode with inquirer
+      const { AgentLoop } = await import('./interactive/agent-loop.js');
+      const { scanHandler } = await import('./interactive/commands/scan.js');
+      const { statusHandler } = await import('./interactive/commands/status.js');
+      const { helpHandler } = await import('./interactive/commands/help.js');
+      const { exitHandler } = await import('./interactive/commands/exit.js');
+
+      // Create Agent Loop instance
+      const agentLoop = new AgentLoop();
+
+      // Register slash commands
+      const scanCommand: SlashCommand = {
+        name: 'scan',
+        description: 'Scan for agents and tools',
+        usage: '/scan [current|system|custom]',
+        execute: scanHandler
+      };
+
+      const statusCommand: SlashCommand = {
+        name: 'status',
+        description: 'Show current session state',
+        usage: '/status',
+        execute: statusHandler
+      };
+
+      const helpCommand: SlashCommand = {
+        name: 'help',
+        description: 'Show available commands',
+        usage: '/help',
+        aliases: ['h'],
+        execute: helpHandler
+      };
+
+      const exitCommand: SlashCommand = {
+        name: 'exit',
+        description: 'Exit Agent Mode',
+        usage: '/exit',
+        aliases: ['quit', 'q'],
+        execute: exitHandler
+      };
+
+      // Register commands
+      agentLoop.registerCommand(scanCommand);
+      agentLoop.registerCommand(statusCommand);
+      agentLoop.registerCommand(helpCommand);
+      agentLoop.registerCommand(exitCommand);
+
+      // Start Agent Mode
+      try {
+        await agentLoop.start();
+      } catch (error) {
+        console.error('Error in Agent Mode:', error);
+        process.exit(1);
+      }
+    }
   }, 100);
 } else {
   program.parse();
