@@ -402,13 +402,13 @@ The CLI becomes an AI-assisted terminal environment with:
 
 | # | Task | Type | Status |
 |---|------|------|--------|
-| S4-18A | [TEST FIRST] Write tests for AI-powered scanner with glob/grep | TDD | [ ] |
-| S4-18B | Implement AI Directory Scanner using glob patterns | Core | [ ] |
-| S4-18C | Implement AI Content Analyzer for agent/skill validation | Core | [ ] |
-| S4-18D | Fix OpenCode project-level detection (./.opencode/agents/*.md) | Core | [ ] |
-| S4-18E | Fix OpenCode global detection (~/.config/opencode/) | Core | [ ] |
-| S4-18F | Implement proper agent Markdown parser with YAML frontmatter | Core | [ ] |
-| S4-18G | Implement proper skill directory scanner | Core | [ ] |
+| S4-18A | [TEST FIRST] Write tests for AI-powered scanner with glob/grep | TDD | [x] |
+| S4-18B | Implement AI Directory Scanner using glob patterns | Core | [x] |
+| S4-18C | Implement AI Content Analyzer for agent/skill validation | Core | [x] |
+| S4-18D | Fix OpenCode project-level detection (./.opencode/agents/*.md) | Core | [x] |
+| S4-18E | Fix OpenCode global detection (~/.config/opencode/) | Core | [x] |
+| S4-18F | Implement proper agent Markdown parser with YAML frontmatter | Core | [x] |
+| S4-18G | Implement proper skill directory scanner | Core | [x] |
 | S4-18H | Add ora spinner UI with real-time scan progress updates | CLI | [ ] |
 | S4-18I | Add incremental scan results display ("Found X agents...") | CLI | [ ] |
 | S4-18J | Implement AI cross-validation to eliminate false positives | Core | [ ] |
