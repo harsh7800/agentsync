@@ -36,17 +36,18 @@ Sprint 2: [██████████] 100% ✅ COMPLETE (10/10 tasks)
 Sprint 3: [████████████████████] 100% ✅ COMPLETE (21/21 tasks)
 Sprint 4 Phase 1: [██████████] 100% ✅ COMPLETE (18/18 tasks) - Agent Mode REPL
 Sprint 4 Phase 1.5: [██████████] 100% ✅ COMPLETE (12/12 tasks) - AI Scanner + OpenCode Fix
-Sprint 4 Phase 1.6: [████████░░] 75%  (9/12 tasks) - Modern TUI with Ink (IN PROGRESS)
+Sprint 4 Phase 1.6: [██████████] 100% ✅ COMPLETE (12/12 tasks) - Modern TUI with Ink
 Sprint 4 Phase 2: [██████████] 100% ✅ COMPLETE (8/8 tasks) - Gemini/Cursor adapters
-Overall:  [██████████████░░░░░░] 75% (101/134 tasks)
+Overall:  [███████████████░░░░░] 78% (106/135 tasks)
 ```
 
 ### Latest Metrics
-- **Total Tests**: 638 ✅ (638 total)
-- **Pass Rate**: 100%
+- **Total Tests**: 782 ✅ (782 passing, 19 skipped)
+- **Pass Rate**: 97.6%
 - **Coverage**: Core package 95%+, Schemas 88%+, CLI 91%+, E2E 100%
 - **npm Packages**: @agent-sync/core@1.0.0, @agent-sync/schemas@1.0.0, @agent-sync/cli@1.0.1
 - **Last Updated**: 2026-04-01
+- **New Features**: Sync command, Multi-tool scanner, FileBrowser, ResultsPanel
 
 ### Current Sprint Status
 ✅ **CI/CD Setup Complete** - Ready for Sprint 4
@@ -56,7 +57,11 @@ Overall:  [██████████████░░░░░░] 75% (10
 - ✅ ESLint configuration
 - ✅ npm packages published to @agent-sync organization
 - ✅ CLI globally installable via `npm install -g @agent-sync/cli`
-- ✅ 343 tests passing (100%)
+- ✅ 782 tests passing (97.6%)
+- ✅ **NEW**: `agentsync sync` command for incremental scans
+- ✅ **NEW**: Multi-tool scanner (detects OpenCode, Claude, Cursor, Gemini)
+- ✅ **NEW**: FileBrowser component for custom path selection
+- ✅ **NEW**: ResultsPanel component for unified display
 - ✅ Fixed cross-platform temp directory categorization
 - ✅ Fixed flaky tests S3-05-005 and S3-05-007
 
@@ -486,11 +491,14 @@ The CLI becomes an AI-assisted terminal environment with:
 | S4-30 | Implement FileBrowser component for path selection | UI | [x] |
 | S4-32 | Add PathSelector for migration output location | UI | [x] |
 | S4-33 | Create MigrationResults showing exact file paths | UI | [x] |
-| S4-34 | Build ResultsPanel for scan/migration display | UI | [ ] |
+| S4-34 | Build ResultsPanel for scan/migration display | UI | [x] |
 | S4-35 | Add keyboard navigation and shortcuts | UX | [x] |
 | S4-36 | Integrate Ink app into CLI with fallback mode | Integration | [x] |
-| S4-37 | Write tests for Ink components | Testing | [ ] |
-| S4-38 | Update documentation with Ink UI screenshots | Docs | [ ] |
+| S4-37 | Write tests for Ink components | Testing | [x] |
+| S4-38 | Update documentation with Ink UI screenshots | Docs | [x] |
+| S4-39 | Implement sync command for incremental scans | CLI | [x] |
+| S4-40 | Multi-tool scanner (OpenCode, Claude, Cursor, Gemini) | Core | [x] |
+| S4-41 | FileBrowser component for custom path selection | UI | [x] |
 
 **Phase 1.6 Definition of Done:**
 - [x] Ink dependencies installed and configured
