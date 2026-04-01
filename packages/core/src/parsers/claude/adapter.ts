@@ -95,8 +95,15 @@ export class ClaudeAdapter implements ToolAdapter<ClaudeToolModel> {
     const claudeExt = agent.metadata.extensions?.claude || {};
     
     // Build tools list from agent's referenced skills and MCPs
-    // Or use original tools if available
+    // Or use original tools if available (check all source tool extensions)
     let tools: string[] | undefined = (claudeExt.originalTools as string[]);
+    
+    // If no Claude-specific tools, check other source tools
+    if (!tools) {
+      // Check OpenCode extension
+      const opencodeExt = agent.metadata.extensions?.opencode || {};
+      tools = (opencodeExt.originalTools as string[]);
+    }
     
     // If no original tools, infer from skills
     if (!tools && agent.skills.length > 0) {
