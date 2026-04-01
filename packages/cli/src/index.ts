@@ -22,6 +22,9 @@ export { statusHandler } from './interactive/commands/status.js';
 export { helpHandler } from './interactive/commands/help.js';
 export { exitHandler } from './interactive/commands/exit.js';
 
+// Export types
+export type { SlashCommand, CommandContext, CommandResult, SessionState } from './interactive/types.js';
+
 const program = new Command();
 
 // Check if interactive mode should be launched
