@@ -103,14 +103,32 @@ export function clearSessionState(): ISessionState {
 }
 
 /**
+ * Extended command context with session management
+ */
+export interface ExtendedCommandContext extends CommandContext {
+  updateSession: (updates: Partial<SessionState>) => void;
+  clearSession: () => void;
+  registry: Map<string, unknown>;
+}
+
+/**
  * Creates a command context from session state
  */
-export function createCommandContext(initialState?: ISessionState): CommandContext {
+export function createCommandContext(initialState?: SessionState): ExtendedCommandContext {
   const session = initialState ?? createSessionState();
+  const registry = new Map<string, unknown>();
+
   return {
     session,
     args: [],
-    flags: {}
+    flags: {},
+    registry,
+    updateSession: (updates: Partial<SessionState>) => {
+      Object.assign(session, updates);
+    },
+    clearSession: () => {
+      Object.assign(session, createSessionState());
+    }
   };
 }
 

@@ -1,6 +1,6 @@
 import * as readline from 'readline';
 import type { SlashCommand, CommandContext, CommandResult, SessionState } from './types.js';
-import { CommandRegistry } from './command-registry.js';
+import { CommandRegistry, RegisteredCommand } from './command-registry.js';
 
 export interface AgentLoopConfig {
   /** REPL prompt symbol (default: "> ") */
@@ -110,7 +110,7 @@ export class AgentLoop {
   }
 
   private async executeCommand(
-    command: SlashCommand,
+    command: RegisteredCommand,
     args: string[],
     flags: Record<string, boolean>
   ): Promise<CommandResult> {
@@ -121,7 +121,7 @@ export class AgentLoop {
         flags
       };
 
-      const result = await command.execute(context);
+      const result = await command.handler(context);
 
       // Update session if needed
       if (result.updatedSession) {
@@ -150,14 +150,14 @@ export class AgentLoop {
   /**
    * Get a command by name
    */
-  getCommand(name: string): SlashCommand | undefined {
+  getCommand(name: string): RegisteredCommand | undefined {
     return this.registry.get(name);
   }
 
   /**
    * Get all registered commands
    */
-  getRegisteredCommands(): SlashCommand[] {
+  getRegisteredCommands(): RegisteredCommand[] {
     return this.registry.getAll();
   }
 

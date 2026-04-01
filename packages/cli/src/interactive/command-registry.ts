@@ -1,5 +1,23 @@
-import type { SlashCommand } from './types.js';
+import type { SlashCommand, CommandContext, CommandResult } from './types.js';
 import { CommandAlreadyExistsError, InvalidCommandNameError } from './types.js';
+
+// Type for test compatibility
+export interface CommandMetadata {
+  name: string;
+  description: string;
+  usage: string;
+  aliases?: string[];
+}
+
+export type CommandHandler = (context: CommandContext) => Promise<CommandResult>;
+
+export interface RegisteredCommand {
+  name: string;
+  description: string;
+  usage: string;
+  aliases?: string[];
+  handler: CommandHandler;
+}
 
 /**
  * CommandRegistry
@@ -7,44 +25,145 @@ import { CommandAlreadyExistsError, InvalidCommandNameError } from './types.js';
  * Manages slash command registration and parsing for the Agent Loop.
  */
 export class CommandRegistry {
-  private commands: Map<string, SlashCommand> = new Map();
+  private commands: Map<string, RegisteredCommand> = new Map();
+  private aliases: Map<string, string> = new Map(); // alias -> command name
 
   /**
-   * Registers a command in the registry
+   * Registers a command in the registry (test-compatible API)
    * @throws CommandAlreadyExistsError if command name already registered
    * @throws InvalidCommandNameError if command name is invalid
    */
-  register(command: SlashCommand): void {
-    if (this.commands.has(command.name)) {
-      throw new CommandAlreadyExistsError(command.name);
-    }
+  register(metadata: CommandMetadata, handler: CommandHandler): this;
+  register(command: SlashCommand): void;
+  register(
+    metadataOrCommand: CommandMetadata | SlashCommand,
+    handler?: CommandHandler
+  ): this | void {
+    if (handler) {
+      // Test-compatible API: register(metadata, handler)
+      const metadata = metadataOrCommand as CommandMetadata;
+      
+      // Strip leading slash for storage
+      const name = metadata.name.startsWith('/') ? metadata.name.slice(1) : metadata.name;
+      
+      if (this.commands.has(name)) {
+        throw new CommandAlreadyExistsError(metadata.name);
+      }
 
-    if (!this.isValidCommandName(command.name)) {
-      throw new InvalidCommandNameError(command.name);
-    }
+      if (!this.isValidCommandName(name)) {
+        throw new InvalidCommandNameError(metadata.name);
+      }
 
-    this.commands.set(command.name, command);
+      const command: RegisteredCommand = {
+        name: metadata.name,
+        description: metadata.description,
+        usage: metadata.usage,
+        aliases: metadata.aliases,
+        handler
+      };
+
+      this.commands.set(name, command);
+
+      // Register aliases
+      if (metadata.aliases) {
+        for (const alias of metadata.aliases) {
+          const aliasKey = alias.startsWith('/') ? alias.slice(1) : alias;
+          if (this.aliases.has(aliasKey) || this.commands.has(aliasKey)) {
+            throw new CommandAlreadyExistsError(alias);
+          }
+          this.aliases.set(aliasKey, name);
+        }
+      }
+
+      return this;
+    } else {
+      // Original API: register(command)
+      const command = metadataOrCommand as SlashCommand;
+      if (this.commands.has(command.name)) {
+        throw new CommandAlreadyExistsError(command.name);
+      }
+
+      if (!this.isValidCommandName(command.name)) {
+        throw new InvalidCommandNameError(command.name);
+      }
+
+      const registeredCommand: RegisteredCommand = {
+        name: command.name,
+        description: command.description,
+        usage: command.usage,
+        aliases: command.aliases,
+        handler: command.execute
+      };
+
+      this.commands.set(command.name, registeredCommand);
+
+      // Register aliases
+      if (command.aliases) {
+        for (const alias of command.aliases) {
+          if (this.aliases.has(alias) || this.commands.has(alias)) {
+            throw new CommandAlreadyExistsError(alias);
+          }
+          this.aliases.set(alias, command.name);
+        }
+      }
+    }
   }
 
   /**
-   * Retrieves a command by name
+   * Retrieves a command by name (test-compatible)
    */
-  get(name: string): SlashCommand | undefined {
-    return this.commands.get(name);
+  resolve(name: string): RegisteredCommand | undefined {
+    // Strip leading slash if present
+    const key = name.startsWith('/') ? name.slice(1) : name;
+    
+    // Try direct lookup
+    if (this.commands.has(key)) {
+      return this.commands.get(key);
+    }
+    
+    // Try alias lookup
+    const aliasedName = this.aliases.get(key);
+    if (aliasedName) {
+      return this.commands.get(aliasedName);
+    }
+    
+    return undefined;
   }
 
   /**
-   * Returns all registered commands
+   * Retrieves a command by name (original API)
    */
-  getAll(): SlashCommand[] {
+  get(name: string): RegisteredCommand | undefined {
+    return this.resolve(name);
+  }
+
+  /**
+   * Returns all registered commands (test-compatible)
+   */
+  getAllCommands(): RegisteredCommand[] {
     return Array.from(this.commands.values());
   }
 
   /**
-   * Checks if a command is registered
+   * Returns all registered commands (original API)
+   */
+  getAll(): RegisteredCommand[] {
+    return this.getAllCommands();
+  }
+
+  /**
+   * Checks if a command is registered (test-compatible)
+   */
+  hasCommand(name: string): boolean {
+    const key = name.startsWith('/') ? name.slice(1) : name;
+    return this.commands.has(key) || this.aliases.has(key);
+  }
+
+  /**
+   * Checks if a command is registered (original API)
    */
   has(name: string): boolean {
-    return this.commands.has(name);
+    return this.hasCommand(name);
   }
 
   /**
@@ -52,7 +171,37 @@ export class CommandRegistry {
    * @returns true if command was found and removed, false otherwise
    */
   unregister(name: string): boolean {
-    return this.commands.delete(name);
+    const key = name.startsWith('/') ? name.slice(1) : name;
+    
+    // Remove command
+    const command = this.commands.get(key);
+    if (command) {
+      this.commands.delete(key);
+      
+      // Remove aliases
+      if (command.aliases) {
+        for (const alias of command.aliases) {
+          const aliasKey = alias.startsWith('/') ? alias.slice(1) : alias;
+          this.aliases.delete(aliasKey);
+        }
+      }
+      
+      return true;
+    }
+    
+    return false;
+  }
+
+  /**
+   * Gets help info for all commands
+   */
+  getHelpInfo(): CommandMetadata[] {
+    return this.getAllCommands().map(cmd => ({
+      name: cmd.name,
+      description: cmd.description,
+      usage: cmd.usage,
+      aliases: cmd.aliases
+    }));
   }
 
   /**
@@ -112,7 +261,8 @@ export class CommandRegistry {
   }
 
   private isValidCommandName(name: string): boolean {
-    // Command names must start with a letter and contain only alphanumeric characters
-    return /^[a-zA-Z][a-zA-Z0-9]*$/.test(name);
+    // Command names can optionally start with / and must contain only alphanumeric characters and /
+    // Examples: "scan", "/scan", "help", "/help"
+    return /^(\/)?[a-zA-Z][a-zA-Z0-9]*$/.test(name);
   }
 }
