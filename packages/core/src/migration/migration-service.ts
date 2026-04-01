@@ -26,9 +26,18 @@ import * as path from 'path';
 import { 
   OpenCodeToolParser, 
   ClaudeToolParser,
+  GeminiParser,
+  CursorParser,
   toolPathRegistry 
 } from '../parsers/index.js';
-import { ClaudeToOpenCodeTranslator, OpenCodeToClaudeTranslator } from '../translators/index.js';
+import { 
+  ClaudeToOpenCodeTranslator, 
+  OpenCodeToClaudeTranslator,
+  GeminiToClaudeTranslator,
+  GeminiToOpenCodeTranslator,
+  CursorToClaudeTranslator,
+  CursorToOpenCodeTranslator
+} from '../translators/index.js';
 import { FileOperations } from '../file-operations.js';
 import type { ToolName } from '../registry/index.js';
 import type { OpenCodeToolModel } from '../parsers/opencode/types.js';
@@ -90,15 +99,23 @@ export class MigrationService {
     this.fileOps = new FileOperations();
     
     // Initialize parsers with type assertions
+    // Note: Gemini and Cursor use legacy parsers as directory-based parsers don't exist yet
     this.parsers = new Map<ToolName, ToolParser>([
       ['opencode', new OpenCodeToolParser() as ToolParser],
       ['claude', new ClaudeToolParser() as ToolParser]
     ]);
     
-    // Initialize translators
+    // Initialize translators for all supported tool combinations
     this.translators = new Map<string, unknown>([
+      // Claude ↔ OpenCode
       ['claude→opencode', new ClaudeToOpenCodeTranslator()],
-      ['opencode→claude', new OpenCodeToClaudeTranslator()]
+      ['opencode→claude', new OpenCodeToClaudeTranslator()],
+      // Gemini → Claude/OpenCode
+      ['gemini→claude', new GeminiToClaudeTranslator()],
+      ['gemini→opencode', new GeminiToOpenCodeTranslator()],
+      // Cursor → Claude/OpenCode
+      ['cursor→claude', new CursorToClaudeTranslator()],
+      ['cursor→opencode', new CursorToOpenCodeTranslator()]
     ]);
   }
   
@@ -149,14 +166,34 @@ export class MigrationService {
       
       // Type-safe translate call based on source/target tools
       let targetModel: unknown;
+      
+      // Handle Claude ↔ OpenCode
       if (sourceTool === 'claude' && targetTool === 'opencode') {
         const t = translator as ClaudeToOpenCodeTranslator;
         targetModel = t.translate(sourceModel as Parameters<typeof t.translate>[0]);
       } else if (sourceTool === 'opencode' && targetTool === 'claude') {
         const t = translator as OpenCodeToClaudeTranslator;
         targetModel = t.translate(sourceModel as Parameters<typeof t.translate>[0]);
-      } else {
-        throw new Error(`Translation from ${sourceTool} to ${targetTool} not supported`);
+      }
+      // Handle Gemini → Claude/OpenCode
+      else if (sourceTool === 'gemini' && targetTool === 'claude') {
+        const t = translator as GeminiToClaudeTranslator;
+        targetModel = t.translate(sourceModel as Parameters<typeof t.translate>[0]);
+      } else if (sourceTool === 'gemini' && targetTool === 'opencode') {
+        const t = translator as GeminiToOpenCodeTranslator;
+        targetModel = t.translate(sourceModel as Parameters<typeof t.translate>[0]);
+      }
+      // Handle Cursor → Claude/OpenCode
+      else if (sourceTool === 'cursor' && targetTool === 'claude') {
+        const t = translator as CursorToClaudeTranslator;
+        targetModel = t.translate(sourceModel as Parameters<typeof t.translate>[0]);
+      } else if (sourceTool === 'cursor' && targetTool === 'opencode') {
+        const t = translator as CursorToOpenCodeTranslator;
+        targetModel = t.translate(sourceModel as Parameters<typeof t.translate>[0]);
+      }
+      // Note: Reverse translations (Claude/OpenCode → Gemini/Cursor) are not yet implemented
+      else {
+        throw new Error(`Translation from ${sourceTool} to ${targetTool} not yet supported`);
       }
       
       // Step 6: Write target config
