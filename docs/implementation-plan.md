@@ -540,9 +540,9 @@ packages/cli/src/ui-ink/
 | S4-19 | [TEST FIRST] Write parser tests for Gemini CLI config schema | TDD | [x] |
 | S4-20 | Implement Gemini CLI adapter (parser + translator) | Core | [x] |
 | S4-21 | [TEST FIRST] Write parser tests for Cursor config schema | TDD | [x] |
-| S4-22 | Implement Cursor adapter (.cursorrules + MCP support) | Core | [ ] |
-| S4-23 | Implement Gemini → Claude translator | Core | [ ] |
-| S4-24 | Implement Cursor → OpenCode translator | Core | [ ] |
+| S4-22 | Implement Cursor adapter (.cursorrules + MCP support) | Core | [x] |
+| S4-23 | Implement Gemini → Claude translator | Core | [x] |
+| S4-24 | Implement Cursor → OpenCode translator | Core | [x] |
 | S4-25 | Update CLI to support new tool options (--from/--to) | CLI | [ ] |
 | S4-26 | Cross-tool matrix tests for 4-tool combinations | E2E | [ ] |
 
