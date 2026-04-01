@@ -34,12 +34,14 @@
 Sprint 1: [██████████] 100% ✅ COMPLETE (9/9 tasks)
 Sprint 2: [██████████] 100% ✅ COMPLETE (10/10 tasks)
 Sprint 3: [████████████████████] 100% ✅ COMPLETE (21/21 tasks)
-Sprint 4: [░░░░░░░░░░] 0%  (0/26 tasks) - Interactive Agent Mode + Gemini/Cursor
+Sprint 4 Phase 1: [██████████] 100% ✅ COMPLETE (18/18 tasks) - Agent Mode REPL
+Sprint 4 Phase 1.5: [░░░░░░░░░░] 0%  (0/12 tasks) - AI Scanner + OpenCode Fix
+Sprint 4 Phase 2: [░░░░░░░░░░] 0%  (0/8 tasks) - Gemini/Cursor adapters
 Sprint 5: [░░░░░░░░░░] 0%  (0/8 tasks)
 Sprint 6: [░░░░░░░░░░] 0%  (0/8 tasks)
 Sprint 7: [░░░░░░░░░░] 0%  (0/7 tasks)
 Sprint 8: [░░░░░░░░░░] 0%  (0/8 tasks)
-Overall:  [████████████░░░░░░░░] 31% (40/97 tasks)
+Overall:  [██████████░░░░░░░░░░] 43% (40/109 tasks)
 ```
 
 ### Latest Metrics
@@ -387,6 +389,43 @@ The CLI becomes an AI-assisted terminal environment with:
 | S4-16 | Implement /exit command with graceful shutdown | CLI | [x] |
 | S4-17 | Update CLI entry point to enter Agent Loop mode by default | CLI | [x] |
 | S4-18 | E2E tests: Full interactive agent mode flow | E2E | [x] |
+
+**Phase 1.5: AI-Powered Scanner with Real-time UI & OpenCode Detection Fix (URGENT)**
+
+**Goal**: Fix false positives in scanning and implement AI-powered detection with proper OpenCode structure recognition
+
+**Problem Identified**: Current scanner returns false positives and doesn't properly detect OpenCode's actual structure:
+- Project-level: `./.opencode/agents/*.md` and `./.opencode/skills/**/SKILL.md`
+- Global: `~/.config/opencode/opencode.json` with MCP servers
+- Agents are Markdown files with YAML frontmatter
+- Skills are directories containing `SKILL.md` files
+
+| # | Task | Type | Status |
+|---|------|------|--------|
+| S4-18A | [TEST FIRST] Write tests for AI-powered scanner with glob/grep | TDD | [ ] |
+| S4-18B | Implement AI Directory Scanner using glob patterns | Core | [ ] |
+| S4-18C | Implement AI Content Analyzer for agent/skill validation | Core | [ ] |
+| S4-18D | Fix OpenCode project-level detection (./.opencode/agents/*.md) | Core | [ ] |
+| S4-18E | Fix OpenCode global detection (~/.config/opencode/) | Core | [ ] |
+| S4-18F | Implement proper agent Markdown parser with YAML frontmatter | Core | [ ] |
+| S4-18G | Implement proper skill directory scanner | Core | [ ] |
+| S4-18H | Add ora spinner UI with real-time scan progress updates | CLI | [ ] |
+| S4-18I | Add incremental scan results display ("Found X agents...") | CLI | [ ] |
+| S4-18J | Implement AI cross-validation to eliminate false positives | Core | [ ] |
+| S4-18K | E2E tests for AI scanner with actual OpenCode structures | E2E | [ ] |
+| S4-18L | Documentation: OpenCode structure reference guide | Docs | [ ] |
+
+**Phase 1.5 Definition of Done:**
+- [ ] AI scanner uses glob/grep for directory traversal
+- [ ] Real-time spinner shows current directory being scanned
+- [ ] Incremental updates: "Scanning ~/.config/opencode... Found 3 agents"
+- [ ] OpenCode agents properly detected from `./.opencode/agents/*.md`
+- [ ] OpenCode skills properly detected from `./.opencode/skills/**/SKILL.md`
+- [ ] OpenCode MCP servers detected from `~/.config/opencode/opencode.json`
+- [ ] AI validates found files are legitimate (not false positives)
+- [ ] Cross-provider recognition works (migrated configs detected instantly)
+- [ ] Zero false positives in scan results
+- [ ] Complete OpenCode structure documentation
 
 **Phase 2: Tool Support Expansion**
 
