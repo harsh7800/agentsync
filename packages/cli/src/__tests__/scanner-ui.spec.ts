@@ -13,11 +13,11 @@ vi.mock('ora', () => {
 // Mock chalk with chained bold support
 vi.mock('chalk', () => {
   const mockColor = vi.fn((text: string) => text);
-  const createBoldColor = (colorFn: Function) => {
+  const createBoldColor = (colorFn: (text: string) => string) => {
     const boldFn = vi.fn((text: string) => text);
-    // @ts-ignore
+    // @ts-expect-error - mocking chained properties
     boldFn.cyan = mockColor;
-    // @ts-ignore
+    // @ts-expect-error - mocking chained properties
     boldFn.red = mockColor;
     return boldFn;
   };

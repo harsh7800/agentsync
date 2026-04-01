@@ -73,6 +73,7 @@ export async function promptScanScope(): Promise<{ scope: ScanScope; customPath?
 export async function promptCustomPath(startPath: string = process.cwd()): Promise<string> {
   let currentPath = resolve(startPath);
 
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     try {
       // Read directory contents
