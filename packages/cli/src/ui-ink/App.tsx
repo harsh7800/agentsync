@@ -37,12 +37,6 @@ export function App({ initialRoute = 'scan' }: AppProps): React.ReactElement {
           <MigrationView
             detectedAgents={detectedAgents}
             onNavigate={navigate}
-            onToolsSelected={(source, target) => {
-              // Handle tool selection
-            }}
-            onMigrationComplete={(result) => {
-              // Handle migration complete
-            }}
           />
         );
       case 'help':
@@ -54,9 +48,7 @@ export function App({ initialRoute = 'scan' }: AppProps): React.ReactElement {
 
   return (
     <Box flexDirection="column" height="100%">
-      <Layout currentRoute={currentRoute}>
-        {renderCurrentView()}
-      </Layout>
+      {renderCurrentView()}
     </Box>
   );
 }
