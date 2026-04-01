@@ -39,7 +39,7 @@ import {
 import { FileOperations } from '../file-operations.js';
 import type { ToolName } from '../registry/index.js';
 import type { OpenCodeToolModel } from '../parsers/opencode/types.js';
-import type { ClaudeToolModel } from '../parsers/claude/types.js';
+import type { ClaudeToolModel, ClaudeAgent } from '../parsers/claude/types.js';
 
 // Common Schema imports
 import {
@@ -222,8 +222,12 @@ export class MigrationService {
           throw new Error(`Target path is not a directory: ${targetPath}`);
         }
 
+        // Check if source has a global .md file (for conditional CLAUDE.md creation)
+        const hasGlobalMdFile = await this.hasGlobalMdFile(sourcePath);
+        if (verbose && hasGlobalMdFile) console.log('Source has global .md file - will create CLAUDE.md');
+
         if (verbose) console.log(`Writing target: ${targetTool}`);
-        await this.writeTargetConfig(targetTool, targetPath, targetModel);
+        await this.writeTargetConfig(targetTool, targetPath, targetModel, { hasGlobalMdFile });
       }
 
       // Calculate items migrated
@@ -329,19 +333,38 @@ export class MigrationService {
   }
 
   /**
+   * Check if source directory has a global .md file (CLAUDE.md, README.md, etc.)
+   */
+  private async hasGlobalMdFile(sourcePath: string): Promise<boolean> {
+    const globalMdFiles = ['CLAUDE.md', 'README.md', 'AGENTS.md', 'claude.md', 'readme.md'];
+    
+    for (const file of globalMdFiles) {
+      try {
+        await fs.access(path.join(sourcePath, file));
+        return true;
+      } catch {
+        // File doesn't exist, continue checking
+      }
+    }
+    
+    return false;
+  }
+
+  /**
    * Write target configuration based on tool type
    */
   private async writeTargetConfig(
     tool: ToolName,
     targetPath: string,
-    config: unknown
+    config: unknown,
+    options: { hasGlobalMdFile?: boolean } = {}
   ): Promise<void> {
     switch (tool) {
       case 'opencode':
         await this.writeOpenCodeConfig(targetPath, config as OpenCodeToolModel);
         break;
       case 'claude':
-        await this.writeClaudeConfig(targetPath, config as ClaudeToolModel);
+        await this.writeClaudeConfig(targetPath, config as ClaudeToolModel, options);
         break;
       default:
         throw new Error(`Writing ${tool} config not yet implemented`);
@@ -407,12 +430,24 @@ export class MigrationService {
   }
 
   /**
-   * Write Claude configuration to settings.json
+   * Write Claude Code configuration
+   * 
+   * Creates proper Claude Code structure:
+   * - .claude/settings.json - Settings and permissions
+   * - .mcp.json - MCP server configurations
+   * - CLAUDE.md - Main system prompt (from primary agent) - ONLY if source has global .md
+   * - .claude/agents/ - Agent definitions (if multiple agents)
    */
-  private async writeClaudeConfig(targetPath: string, config: ClaudeToolModel): Promise<void> {
-    const configData: Record<string, unknown> = {};
+  private async writeClaudeConfig(
+    targetPath: string, 
+    config: ClaudeToolModel,
+    options: { hasGlobalMdFile?: boolean } = {}
+  ): Promise<void> {
+    // Create .claude directory
+    const claudeDir = path.join(targetPath, '.claude');
+    await fs.mkdir(claudeDir, { recursive: true });
 
-    // Write MCP servers
+    // 1. Write .mcp.json with MCP servers (separate file as per Claude Code spec)
     if (config.mcpServers && config.mcpServers.length > 0) {
       const mcpData: Record<string, unknown> = {};
       for (const server of config.mcpServers) {
@@ -422,26 +457,223 @@ export class MigrationService {
           env: server.env
         };
       }
-      configData.mcpServers = mcpData;
+      await this.fileOps.writeConfigFile(
+        path.join(targetPath, '.mcp.json'),
+        { mcpServers: mcpData }
+      );
     }
 
-    // Write agents
+    // 2. Write .claude/settings.json with permissions and other settings
+    const settingsData: Record<string, unknown> = {
+      $schema: 'https://json.schemastore.org/claude-code-settings.json'
+    };
+
+    // Add agent tools as permissions if present
     if (config.agents && config.agents.length > 0) {
-      const agentsData: Record<string, unknown> = {};
-      for (const agent of config.agents) {
-        agentsData[agent.name] = {
-          description: agent.description,
-          system_prompt: agent.systemPrompt,
-          tools: agent.tools
+      const allTools = new Set<string>();
+      config.agents.forEach(agent => {
+        agent.tools?.forEach(tool => allTools.add(tool));
+      });
+
+      if (allTools.size > 0) {
+        settingsData.permissions = {
+          allow: Array.from(allTools).map(tool => `MCP(${tool})`)
         };
       }
-      configData.agents = agentsData;
     }
 
     await this.fileOps.writeConfigFile(
-      path.join(targetPath, 'settings.json'),
-      configData
+      path.join(claudeDir, 'settings.json'),
+      settingsData
     );
+
+    // 3. Write CLAUDE.md with full system prompt from primary agent
+    // ONLY if the source has a global .md file (CLAUDE.md, README.md, etc.)
+    if (options.hasGlobalMdFile && config.agents && config.agents.length > 0) {
+      const primaryAgent = config.agents[0];
+      const claudeMdContent = this.buildClaudeMd(primaryAgent, config.agents);
+      
+      await fs.writeFile(
+        path.join(targetPath, 'CLAUDE.md'),
+        claudeMdContent,
+        'utf-8'
+      );
+    }
+
+    // 4. Write agents to .claude/agents/ (ALWAYS, regardless of global .md file)
+    // In Claude Code, agents are separate from CLAUDE.md
+    if (config.agents && config.agents.length > 0) {
+      const agentsDir = path.join(claudeDir, 'agents');
+      await fs.mkdir(agentsDir, { recursive: true });
+
+      for (const agent of config.agents) {
+        const agentContent = this.buildAgentMd(agent);
+        await fs.writeFile(
+          path.join(agentsDir, `${agent.name}.md`),
+          agentContent,
+          'utf-8'
+        );
+      }
+    }
+
+    // 5. Migrate skills to .claude/skills/<name>/SKILL.md
+    if (config.skills && config.skills.length > 0) {
+      const skillsDir = path.join(claudeDir, 'skills');
+      await fs.mkdir(skillsDir, { recursive: true });
+
+      for (const skill of config.skills) {
+        const skillDir = path.join(skillsDir, skill.name);
+        await fs.mkdir(skillDir, { recursive: true });
+
+        const skillContent = this.buildSkillMd(skill);
+        await fs.writeFile(
+          path.join(skillDir, 'SKILL.md'),
+          skillContent,
+          'utf-8'
+        );
+      }
+    }
+
+    // 6. Write original agent files backup to preserve full content
+    if (config.agents && config.agents.length > 0) {
+      const backupDir = path.join(targetPath, '.claude', 'migrated-agents');
+      await fs.mkdir(backupDir, { recursive: true });
+
+      for (const agent of config.agents) {
+        const agentBackup = {
+          name: agent.name,
+          description: agent.description,
+          systemPrompt: agent.systemPrompt,
+          tools: agent.tools,
+          _migratedFrom: 'opencode',
+          _migratedAt: new Date().toISOString()
+        };
+        
+        await fs.writeFile(
+          path.join(backupDir, `${agent.name}.json`),
+          JSON.stringify(agentBackup, null, 2),
+          'utf-8'
+        );
+      }
+    }
+  }
+
+  /**
+   * Build SKILL.md content for Claude Code skills
+   * Full content preserved with proper frontmatter
+   */
+  private buildSkillMd(skill: { name: string; description: string; instructions?: string; enabled: boolean; content: string }): string {
+    const sections: string[] = [];
+
+    // Frontmatter
+    sections.push('---');
+    sections.push(`name: ${skill.name}`);
+    sections.push(`description: ${skill.description}`);
+    sections.push(`enabled: ${skill.enabled}`);
+    if (skill.instructions) {
+      sections.push(`instructions: ${skill.instructions}`);
+    }
+    sections.push('---');
+    sections.push('');
+
+    // Full content (instructions + any additional content)
+    if (skill.content) {
+      sections.push(skill.content);
+    } else if (skill.instructions) {
+      sections.push(skill.instructions);
+    }
+
+    return sections.join('\n');
+  }
+
+  /**
+   * Build CLAUDE.md content from primary agent
+   * Preserves full system prompt and all agent details
+   */
+  private buildClaudeMd(primaryAgent: ClaudeAgent, allAgents: ClaudeAgent[]): string {
+    const sections: string[] = [];
+
+    // Title and description
+    sections.push(`# ${primaryAgent.name}`);
+    sections.push('');
+    sections.push(primaryAgent.description);
+    sections.push('');
+
+    // Full system prompt (the main content)
+    if (primaryAgent.systemPrompt) {
+      sections.push(primaryAgent.systemPrompt);
+      sections.push('');
+    }
+
+    // Additional agents section if multiple
+    if (allAgents.length > 1) {
+      sections.push('## Additional Agents');
+      sections.push('');
+      sections.push('This project has multiple specialized agents available in `.claude/agents/`:');
+      sections.push('');
+
+      for (let i = 1; i < allAgents.length; i++) {
+        const agent = allAgents[i];
+        sections.push(`- **${agent.name}**: ${agent.description}`);
+      }
+      sections.push('');
+      sections.push('Use `@agent-name` to invoke a specific agent.');
+      sections.push('');
+    }
+
+    // Tools section
+    if (primaryAgent.tools && primaryAgent.tools.length > 0) {
+      sections.push('## Available Tools');
+      sections.push('');
+      sections.push('This agent has access to the following tools:');
+      sections.push('');
+
+      for (const tool of primaryAgent.tools) {
+        sections.push(`- ${tool}`);
+      }
+      sections.push('');
+    }
+
+    // Migration metadata
+    sections.push('---');
+    sections.push('');
+    sections.push('*Migrated from OpenCode to Claude Code*');
+    sections.push(`*Migration date: ${new Date().toISOString()}*`);
+
+    return sections.join('\n');
+  }
+
+  /**
+   * Build individual agent .md file for .claude/agents/
+   */
+  private buildAgentMd(agent: ClaudeAgent): string {
+    const sections: string[] = [];
+
+    // Frontmatter
+    sections.push('---');
+    sections.push(`name: ${agent.name}`);
+    sections.push(`description: ${agent.description}`);
+    if (agent.tools && agent.tools.length > 0) {
+      sections.push('tools:');
+      for (const tool of agent.tools) {
+        sections.push(`  - ${tool}`);
+      }
+    }
+    sections.push('---');
+    sections.push('');
+
+    // Title
+    sections.push(`# ${agent.name}`);
+    sections.push('');
+    sections.push(agent.description);
+    sections.push('');
+
+    // Full system prompt
+    if (agent.systemPrompt) {
+      sections.push(agent.systemPrompt);
+    }
+
+    return sections.join('\n');
   }
 
   /**
