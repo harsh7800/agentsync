@@ -369,22 +369,22 @@ The CLI becomes an AI-assisted terminal environment with:
 
 | # | Task | Type | Status |
 |---|------|------|--------|
-| S4-01 | [TEST FIRST] Write tests for Agent Loop REPL system | TDD | [ ] |
-| S4-02 | Implement Agent Loop (packages/cli/interactive/agent-loop.ts) | CLI | [ ] |
-| S4-03 | [TEST FIRST] Write tests for Slash Command Registry | TDD | [ ] |
-| S4-04 | Implement Slash Command Registry with command routing | CLI | [ ] |
-| S4-05 | [TEST FIRST] Write tests for /scan command handler | TDD | [ ] |
-| S4-06 | Implement /scan command with scope selection (current dir/system/custom) | CLI | [ ] |
-| S4-07 | [TEST FIRST] Write tests for Scanner Loading UI | TDD | [ ] |
-| S4-08 | Implement Scanner Loading UI with ora spinner (packages/cli/ui/scanner-ui.ts) | CLI | [ ] |
-| S4-09 | [TEST FIRST] Write tests for Scan Results Summary UI | TDD | [ ] |
-| S4-10 | Implement Scan Results Summary with structured output | CLI | [ ] |
-| S4-11 | [TEST FIRST] Write tests for Session State Manager | TDD | [ ] |
-| S4-12 | Implement Session State Manager (scannedTools, detectedAgents, etc.) | CLI | [ ] |
-| S4-13 | Implement /migrate command with session state integration | CLI | [ ] |
-| S4-14 | Implement /status command to show current session | CLI | [ ] |
-| S4-15 | Implement /help command with available commands | CLI | [ ] |
-| S4-16 | Implement /exit command with graceful shutdown | CLI | [ ] |
+| S4-01 | [TEST FIRST] Write tests for Agent Loop REPL system | TDD | [x] |
+| S4-02 | Implement Agent Loop (packages/cli/interactive/agent-loop.ts) | CLI | [x] |
+| S4-03 | [TEST FIRST] Write tests for Slash Command Registry | TDD | [x] |
+| S4-04 | Implement Slash Command Registry with command routing | CLI | [x] |
+| S4-05 | [TEST FIRST] Write tests for /scan command handler | TDD | [x] |
+| S4-06 | Implement /scan command with scope selection (current dir/system/custom) | CLI | [x] |
+| S4-07 | [TEST FIRST] Write tests for Scanner Loading UI | TDD | [x] |
+| S4-08 | Implement Scanner Loading UI with ora spinner (packages/cli/ui/scanner-ui.ts) | CLI | [x] |
+| S4-09 | [TEST FIRST] Write tests for Scan Results Summary UI | TDD | [x] |
+| S4-10 | Implement Scan Results Summary with structured output | CLI | [x] |
+| S4-11 | [TEST FIRST] Write tests for Session State Manager | TDD | [x] |
+| S4-12 | Implement Session State Manager (scannedTools, detectedAgents, etc.) | CLI | [x] |
+| S4-13 | Implement /migrate command with session state integration | CLI | [x] |
+| S4-14 | Implement /status command to show current session | CLI | [x] |
+| S4-15 | Implement /help command with available commands | CLI | [x] |
+| S4-16 | Implement /exit command with graceful shutdown | CLI | [x] |
 | S4-17 | Update CLI entry point to enter Agent Loop mode by default | CLI | [ ] |
 | S4-18 | E2E tests: Full interactive agent mode flow | E2E | [ ] |
 
