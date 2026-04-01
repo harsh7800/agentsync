@@ -1,41 +1,305 @@
-![act-logo](https://raw.githubusercontent.com/wiki/nektos/act/img/logo-150.png)
+# AgentSync CLI
 
-# Overview [![push](https://github.com/nektos/act/workflows/push/badge.svg?branch=master&event=push)](https://github.com/nektos/act/actions) [![Go Report Card](https://goreportcard.com/badge/github.com/nektos/act)](https://goreportcard.com/report/github.com/nektos/act) [![awesome-runners](https://img.shields.io/badge/listed%20on-awesome--runners-blue.svg)](https://github.com/jonico/awesome-runners)
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/harsh7800/agentsync)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-> "Think globally, `act` locally"
+> **AI-assisted terminal environment for managing AI agent configurations**
 
-Run your [GitHub Actions](https://developer.github.com/actions/) locally! Why would you want to do this? Two reasons:
+AgentSync CLI migrates AI agent environments between Claude Code, Gemini CLI, Cursor, OpenCode, and GitHub Copilot CLI. It provides both an **interactive Agent Mode** (REPL with slash commands) and traditional **Command Mode** for automation.
 
-- **Fast Feedback** - Rather than having to commit/push every time you want to test out the changes you are making to your `.github/workflows/` files (or for any changes to embedded GitHub actions), you can use `act` to run the actions locally. The [environment variables](https://help.github.com/en/actions/configuring-and-managing-workflows/using-environment-variables#default-environment-variables) and [filesystem](https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners#filesystems-on-github-hosted-runners) are all configured to match what GitHub provides.
-- **Local Task Runner** - I love [make](<https://en.wikipedia.org/wiki/Make_(software)>). However, I also hate repeating myself. With `act`, you can use the GitHub Actions defined in your `.github/workflows/` to replace your `Makefile`!
+![AgentSync Demo](docs/assets/demo.gif)
 
-> [!TIP]
-> **Now Manage and Run Act Directly From VS Code!**<br/>
-> Check out the [GitHub Local Actions](https://sanjulaganepola.github.io/github-local-actions-docs/) Visual Studio Code extension which allows you to leverage the power of `act` to run and test workflows locally without leaving your editor.
+## Features
 
-# How Does It Work?
+- 🤖 **Agent Mode** - Interactive REPL with slash commands (/scan, /migrate, /status, /exit)
+- 🔄 **Migration Engine** - Bidirectional migration between 5+ AI tools
+- 🔍 **Smart Scanner** - Auto-detect installed AI tools and configurations
+- 🧠 **AI Mapping** - Intelligent field mapping for complex transformations
+- 🔐 **Security First** - API key masking, backups, local-only operation
+- 📊 **Session State** - Persistent state across interactions
+- ⚡ **Fast** - Pure TypeScript, fully testable architecture
 
-When you run `act` it reads in your GitHub Actions from `.github/workflows/` and determines the set of actions that need to be run. It uses the Docker API to either pull or build the necessary images, as defined in your workflow files and finally determines the execution path based on the dependencies that were defined. Once it has the execution path, it then uses the Docker API to run containers for each action based on the images prepared earlier. The [environment variables](https://help.github.com/en/actions/configuring-and-managing-workflows/using-environment-variables#default-environment-variables) and [filesystem](https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#file-systems) are all configured to match what GitHub provides.
+## Installation
 
-Let's see it in action with a [sample repo](https://github.com/cplee/github-actions-demo)!
+```bash
+# Install globally
+npm install -g agentsync
 
-![Demo](https://raw.githubusercontent.com/wiki/nektos/act/quickstart/act-quickstart-2.gif)
+# Or use with npx
+npx agentsync
+```
 
-# Act User Guide
+## Quick Start
 
-Please look at the [act user guide](https://nektosact.com) for more documentation.
+### Agent Mode (Default)
 
-# Support
+Run `agentsync` without arguments to enter **Agent Mode** - an interactive REPL:
 
-Need help? Ask in [discussions](https://github.com/nektos/act/discussions)!
+```bash
+$ agentsync
 
-# Contributing
+AgentSync Interactive Mode
 
-Want to contribute to act? Awesome! Check out the [contributing guidelines](CONTRIBUTING.md) to get involved.
+Type / to see available commands.
+Type /scan to scan for agents and tools.
+Type /migrate to start migration.
+Type /exit to quit.
 
-## Manually building from source
+> /scan
+Scan current directory or entire system?
+1. Current directory
+2. Entire system
+3. Custom path
 
-- Install Go tools 1.20+ - (<https://golang.org/doc/install>)
-- Clone this repo `git clone git@github.com:nektos/act.git`
-- Run unit tests with `make test`
-- Build and install: `make install`
+> 2
+
+Scanning directories...
+✔ Found Claude Code config
+✔ Found OpenCode agents
+✔ Found 3 agents, 12 skills
+
+Scan Complete
+
+Tools Detected:
+- Claude Code
+- OpenCode
+
+Agents Found: 3
+- backend-agent
+- migration-agent
+- ui-agent
+
+Skills Found: 12
+
+MCP Servers:
+- filesystem
+- terminal
+- github
+
+Would you like to migrate these agents to another tool?
+> Yes
+
+Select target tool:
+1. Claude Code
+2. OpenCode
+3. Gemini CLI
+4. Cursor
+5. GitHub Copilot CLI
+
+> 2
+
+Starting migration from Claude Code to OpenCode...
+✔ Migration complete!
+
+> /status
+
+═══════════════════════════════════════════
+         CURRENT SESSION
+═══════════════════════════════════════════
+
+Scan Status: ✔ Complete
+Last Scan: 4/1/2026, 2:32:15 PM
+
+Tools Detected: 2
+  • Claude Code
+  • OpenCode
+
+Agents: 3
+  • backend-agent
+  • migration-agent
+  • ui-agent
+
+Skills: 12
+
+MCP Servers: 3
+  • filesystem
+  • terminal
+  • github
+
+Target Tool: OpenCode
+
+═══════════════════════════════════════════
+
+> /exit
+Goodbye! 👋
+```
+
+### Command Mode
+
+Use traditional CLI commands for scripting and automation:
+
+```bash
+# Migrate from one tool to another
+agentsync migrate --from claude --to cursor
+
+# Detect installed tools
+agentsync detect
+
+# Scan for configurations
+agentsync scan --ai
+
+# Show migration report
+agentsync report
+
+# Restore from backup
+agentsync rollback cursor
+```
+
+## Slash Commands
+
+When in Agent Mode, use these slash commands:
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `/` or `/help` | Show available commands | `/>` |
+| `/scan` | Scan for agents and tools | `/scan` or `/scan current` |
+| `/migrate` | Start migration workflow | `/migrate` |
+| `/detect` | Detect installed tools | `/detect` |
+| `/status` | Show current session state | `/status` |
+| `/clear` | Clear the screen | `/clear` |
+| `/exit` | Exit Agent Mode | `/exit` or `/quit` |
+
+## Supported Tools
+
+| Tool | Status | Migration Support |
+|------|--------|-------------------|
+| Claude Code | ✅ Stable | Full bidirectional |
+| OpenCode | ✅ Stable | Full bidirectional |
+| Gemini CLI | 🚧 Beta | Limited |
+| Cursor | 🚧 Beta | Limited |
+| GitHub Copilot CLI | 🚧 Beta | MCP only |
+
+## Configuration
+
+AgentSync looks for configurations in standard locations:
+
+- **Claude Code**: `~/.config/claude/settings.json`
+- **OpenCode**: `~/.config/opencode/`
+- **Gemini CLI**: `~/.config/gemini/config.json`
+- **Cursor**: `~/.cursor/config.json` or `.cursorrules`
+- **Copilot CLI**: `~/.config/github-copilot/`
+
+## Architecture
+
+AgentSync uses a multi-layer architecture:
+
+```
+┌─────────────────────────────────────┐
+│         Agent Mode (REPL)            │
+│  /scan /migrate /status /help /exit │
+└───────────────┬─────────────────────┘
+                │
+┌───────────────▼─────────────────────┐
+│        CLI Interface Layer           │
+│   Commands, Interactive UI, Prompts  │
+└───────────────┬─────────────────────┘
+                │
+┌───────────────▼─────────────────────┐
+│         Migration Engine             │
+│   Parsers, Translators, AI Mapping   │
+└───────────────┬─────────────────────┘
+                │
+┌───────────────▼─────────────────────┐
+│        Schema Registry               │
+│   Tool-specific JSON schemas         │
+└─────────────────────────────────────┘
+```
+
+## Development
+
+```bash
+# Clone repository
+git clone https://github.com/harsh7800/agentsync.git
+cd agentsync
+
+# Install dependencies
+pnpm install
+
+# Build packages
+pnpm build
+
+# Run tests
+pnpm test
+
+# Run specific test file
+pnpm test packages/cli/src/__tests__/agent-loop.spec.ts
+
+# Start CLI in development mode
+pnpm dev
+```
+
+## Project Structure
+
+```
+agentsync/
+├── packages/
+│   ├── cli/              # CLI entry point and interactive prompts
+│   │   ├── src/
+│   │   │   ├── commands/     # CLI commands (migrate, scan, etc.)
+│   │   │   ├── interactive/  # Agent Mode (REPL, slash commands)
+│   │   │   ├── prompts/      # Interactive prompts
+│   │   │   └── ui/           # Terminal UI components
+│   │   └── README.md
+│   ├── core/             # Migration engine (parsers, translators)
+│   │   ├── src/
+│   │   │   ├── parsers/      # Tool-specific parsers
+│   │   │   ├── translators/  # Common schema translators
+│   │   │   ├── masking/      # API key masking
+│   │   │   └── ai-mapping/   # AI-assisted mapping
+│   │   └── README.md
+│   ├── schemas/          # Versioned JSON schemas
+│   │   └── src/
+│   │       ├── claude/
+│   │       ├── gemini/
+│   │       ├── cursor/
+│   │       └── opencode/
+│   └── e2e/              # End-to-end tests
+├── docs/                 # Documentation
+│   ├── implementation-plan.md
+│   ├── srs.md
+│   ├── cli-interface.md
+│   └── architecture.md
+└── README.md
+```
+
+## Safety & Security
+
+- ✅ **Local-only by default** - No data leaves your machine
+- ✅ **API key masking** - Keys are never written in plain text
+- ✅ **Automatic backups** - Target configs backed up before overwrite
+- ✅ **Dry run mode** - Preview changes before applying
+- ✅ **Atomic writes** - No partial migrations
+
+## Documentation
+
+- [Software Requirements Specification](docs/srs.md)
+- [CLI Interface Guide](docs/cli-interface.md)
+- [Architecture Overview](docs/architecture.md)
+- [Implementation Plan](docs/implementation-plan.md)
+- [Migration Flow](docs/migration-flow.md)
+
+## Contributing
+
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feat/amazing-feature`)
+3. Commit your changes (`git commit -m 'feat: add amazing feature'`)
+4. Push to the branch (`git push origin feat/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+MIT License - see [LICENSE](LICENSE) file for details.
+
+## Support
+
+- 📖 [Documentation](docs/)
+- 🐛 [Issue Tracker](https://github.com/harsh7800/agentsync/issues)
+- 💬 [Discussions](https://github.com/harsh7800/agentsync/discussions)
+
+---
+
+**Built with ❤️ for AI developers**
+
+AgentSync CLI - Making AI tool migration painless

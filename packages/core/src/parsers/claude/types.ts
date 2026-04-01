@@ -34,6 +34,17 @@ export interface ClaudeAgent {
 }
 
 /**
+ * Skill configuration for Claude Code (stored in .claude/skills/)
+ */
+export interface ClaudeSkill {
+  name: string;
+  description: string;
+  instructions?: string;
+  enabled: boolean;
+  content: string;
+}
+
+/**
  * Complete Claude tool configuration model
  */
 export interface ClaudeToolModel {
@@ -41,9 +52,11 @@ export interface ClaudeToolModel {
   rootPath: string;
   mcpServers?: ClaudeMCPServer[];
   agents?: ClaudeAgent[];
+  skills?: ClaudeSkill[];
   settings?: Record<string, unknown>;
   discovered: {
     agentCount: number;
+    skillCount: number;
     mcpServerCount: number;
   };
 }

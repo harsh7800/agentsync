@@ -7,3 +7,7 @@ export * from './registry/index.js';
 export { FileOperations } from './file-operations.js';
 export { MigrationService } from './migration/migration-service.js';
 export type { MigrationResult, MigrationOptions } from './migration/migration-service.js';
+export { AIDirectoryScanner } from './scanner/ai-directory-scanner.js';
+export type { ScanOptions, ScanResult, DetectedFile } from './scanner/types.js';
+export { AICrossValidator, crossValidate, crossValidateBatch, filterValidFiles } from './scanner/ai-cross-validator.js';
+export type { CrossValidationResult, CrossValidationOptions, ValidationDetail, ConfidenceScore } from './scanner/ai-cross-validator.js';

@@ -1,4 +1,4 @@
-# Folder Structure — AgentSync CLI
+﻿# Folder Structure — AgentSync CLI
 
 ```
 agentsync/
@@ -114,3 +114,4 @@ The `registry/` folder contains `tool-paths.registry.ts` which:
 ### Directory-Based vs Single-File Tools
 - **Single-file tools** (Claude): One `settings.json` with all config
 - **Directory-based tools** (OpenCode): Multiple files in `agents/`, `skills/` subdirectories
+

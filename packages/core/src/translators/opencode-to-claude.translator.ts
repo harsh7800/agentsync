@@ -1,5 +1,5 @@
-import type { OpenCodeConfig } from '../types/opencode.types.js';
-import type { ClaudeConfig, ClaudeMCPServer, ClaudeAgent } from '../types/claude.types.js';
+import type { OpenCodeConfig, OpenCodeSkill } from '../types/opencode.types.js';
+import type { ClaudeConfig, ClaudeMCPServer, ClaudeAgent, ClaudeSkill } from '../types/claude.types.js';
 
 export class OpenCodeToClaudeTranslator {
   /**
@@ -39,6 +39,32 @@ export class OpenCodeToClaudeTranslator {
   }
 
   /**
+   * Translate OpenCode skills to Claude format
+   */
+  translateSkills(openCodeConfig: OpenCodeConfig): { skills: ClaudeSkill[] } {
+    const skills: ClaudeSkill[] = [];
+
+    for (const openCodeSkill of openCodeConfig.skills || []) {
+      skills.push(this.translateSkill(openCodeSkill));
+    }
+
+    return { skills };
+  }
+
+  /**
+   * Translate a single OpenCode skill to Claude format
+   */
+  private translateSkill(openCodeSkill: OpenCodeSkill): ClaudeSkill {
+    return {
+      name: openCodeSkill.name,
+      description: openCodeSkill.description,
+      instructions: openCodeSkill.instructions,
+      enabled: openCodeSkill.enabled,
+      content: openCodeSkill.content || openCodeSkill.instructions || ''
+    };
+  }
+
+  /**
    * Translate complete OpenCode configuration to Claude
    */
   translate(openCodeConfig: OpenCodeConfig): ClaudeConfig {
@@ -54,6 +80,12 @@ export class OpenCodeToClaudeTranslator {
     if (openCodeConfig.agents && openCodeConfig.agents.length > 0) {
       const agentsResult = this.translateAgents(openCodeConfig);
       result.agents = agentsResult.agents;
+    }
+
+    // Translate skills if present
+    if (openCodeConfig.skills && openCodeConfig.skills.length > 0) {
+      const skillsResult = this.translateSkills(openCodeConfig);
+      result.skills = skillsResult.skills;
     }
 
     return result;

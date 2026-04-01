@@ -43,7 +43,7 @@ export class ClaudeScanner {
         model: {
           tool: 'claude' as ToolName,
           rootPath: basePath,
-          discovered: { agentCount: 0, mcpServerCount: 0 }
+          discovered: { agentCount: 0, skillCount: 0, mcpServerCount: 0 }
         },
         errors
       };
@@ -82,6 +82,7 @@ export class ClaudeScanner {
         settings: Object.keys(settings).length > 0 ? settings : undefined,
         discovered: {
           agentCount: agents.length,
+          skillCount: 0,
           mcpServerCount: mcpServers.length
         }
       };
@@ -93,7 +94,7 @@ export class ClaudeScanner {
         model: {
           tool: 'claude' as ToolName,
           rootPath: basePath,
-          discovered: { agentCount: 0, mcpServerCount: 0 }
+          discovered: { agentCount: 0, skillCount: 0, mcpServerCount: 0 }
         },
         errors
       };

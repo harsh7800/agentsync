@@ -1,4 +1,4 @@
-export interface OpenCodeMCPServer {
+﻿export interface OpenCodeMCPServer {
   name: string;
   type?: string;  // 'local' | 'remote'
   command: string;
@@ -15,9 +15,18 @@ export interface OpenCodeAgent {
   tools?: string[];
 }
 
+export interface OpenCodeSkill {
+  name: string;
+  description: string;
+  instructions?: string;
+  enabled: boolean;
+  content?: string;
+}
+
 export interface OpenCodeConfig {
   mcpServers?: OpenCodeMCPServer[];
   agents?: OpenCodeAgent[];
+  skills?: OpenCodeSkill[];
 }
 
 export interface OpenCodeMCPInput {
