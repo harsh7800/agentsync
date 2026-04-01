@@ -37,19 +37,10 @@ jobs:
     - name: Run tests
       run: pnpm test -- --run
 
-    - name: Generate CHANGELOG
-      id: changelog
-      uses: requite-io/release-changelog-builder-action@v1
-      env:
-        VERSION: ${{ github.ref_name }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        config: .github/changelog-config.json
-
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
       with:
-        body: ${{ steps.changelog.outputs.changelog }}
+        generate_release_notes: true
         draft: false
         prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'rc') }}
       env:
