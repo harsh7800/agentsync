@@ -34,12 +34,12 @@
 Sprint 1: [██████████] 100% ✅ COMPLETE (9/9 tasks)
 Sprint 2: [██████████] 100% ✅ COMPLETE (10/10 tasks)
 Sprint 3: [████████████████████] 100% ✅ COMPLETE (21/21 tasks)
-Sprint 4: [░░░░░░░░░░] 0%  (0/8 tasks)
+Sprint 4: [░░░░░░░░░░] 0%  (0/26 tasks) - Interactive Agent Mode + Gemini/Cursor
 Sprint 5: [░░░░░░░░░░] 0%  (0/8 tasks)
 Sprint 6: [░░░░░░░░░░] 0%  (0/8 tasks)
 Sprint 7: [░░░░░░░░░░] 0%  (0/7 tasks)
 Sprint 8: [░░░░░░░░░░] 0%  (0/8 tasks)
-Overall:  [████████████████░░░░] 39% (31/79 tasks)
+Overall:  [████████████░░░░░░░░] 31% (40/97 tasks)
 ```
 
 ### Latest Metrics
@@ -354,27 +354,64 @@ Each sprint is one week. Sprints follow strict TDD — every task begins with wr
 
 ---
 
-## Sprint 4 — Expand Tool Support - Gemini & Cursor (Week 4)
+## Sprint 4 — Interactive Agent Mode & Tool Expansion (Week 4)
 
-**Goal**: Add Gemini CLI and Cursor adapters
+**Goal**: Transform CLI into an AI agent terminal with slash commands, then add Gemini & Cursor adapters
+
+**Phase 1: Interactive Agent Mode (REPL with Slash Commands)**
+
+The CLI becomes an AI-assisted terminal environment with:
+- Persistent interactive loop (REPL-style)
+- Slash command system (/scan, /migrate, /help, /exit)
+- Session state management
+- Real-time scanning UI with spinners
+- Structured scan results with migration prompts
 
 | # | Task | Type | Status |
 |---|------|------|--------|
-| S4-01 | [TEST FIRST] Write parser tests for Gemini CLI config schema | TDD | [ ] |
-| S4-02 | Implement Gemini CLI adapter (parser + translator) | Core | [ ] |
-| S4-03 | [TEST FIRST] Write parser tests for Cursor config schema | TDD | [ ] |
-| S4-04 | Implement Cursor adapter (.cursorrules + MCP support) | Core | [ ] |
-| S4-05 | Implement Gemini → Claude translator | Core | [ ] |
-| S4-06 | Implement Cursor → OpenCode translator | Core | [ ] |
-| S4-07 | Update CLI to support new tool options (--from/--to) | CLI | [ ] |
-| S4-08 | Cross-tool matrix tests for 4-tool combinations | E2E | [ ] |
+| S4-01 | [TEST FIRST] Write tests for Agent Loop REPL system | TDD | [ ] |
+| S4-02 | Implement Agent Loop (packages/cli/interactive/agent-loop.ts) | CLI | [ ] |
+| S4-03 | [TEST FIRST] Write tests for Slash Command Registry | TDD | [ ] |
+| S4-04 | Implement Slash Command Registry with command routing | CLI | [ ] |
+| S4-05 | [TEST FIRST] Write tests for /scan command handler | TDD | [ ] |
+| S4-06 | Implement /scan command with scope selection (current dir/system/custom) | CLI | [ ] |
+| S4-07 | [TEST FIRST] Write tests for Scanner Loading UI | TDD | [ ] |
+| S4-08 | Implement Scanner Loading UI with ora spinner (packages/cli/ui/scanner-ui.ts) | CLI | [ ] |
+| S4-09 | [TEST FIRST] Write tests for Scan Results Summary UI | TDD | [ ] |
+| S4-10 | Implement Scan Results Summary with structured output | CLI | [ ] |
+| S4-11 | [TEST FIRST] Write tests for Session State Manager | TDD | [ ] |
+| S4-12 | Implement Session State Manager (scannedTools, detectedAgents, etc.) | CLI | [ ] |
+| S4-13 | Implement /migrate command with session state integration | CLI | [ ] |
+| S4-14 | Implement /status command to show current session | CLI | [ ] |
+| S4-15 | Implement /help command with available commands | CLI | [ ] |
+| S4-16 | Implement /exit command with graceful shutdown | CLI | [ ] |
+| S4-17 | Update CLI entry point to enter Agent Loop mode by default | CLI | [ ] |
+| S4-18 | E2E tests: Full interactive agent mode flow | E2E | [ ] |
+
+**Phase 2: Tool Support Expansion**
+
+| # | Task | Type | Status |
+|---|------|------|--------|
+| S4-19 | [TEST FIRST] Write parser tests for Gemini CLI config schema | TDD | [ ] |
+| S4-20 | Implement Gemini CLI adapter (parser + translator) | Core | [ ] |
+| S4-21 | [TEST FIRST] Write parser tests for Cursor config schema | TDD | [ ] |
+| S4-22 | Implement Cursor adapter (.cursorrules + MCP support) | Core | [ ] |
+| S4-23 | Implement Gemini → Claude translator | Core | [ ] |
+| S4-24 | Implement Cursor → OpenCode translator | Core | [ ] |
+| S4-25 | Update CLI to support new tool options (--from/--to) | CLI | [ ] |
+| S4-26 | Cross-tool matrix tests for 4-tool combinations | E2E | [ ] |
 
 **Sprint 4 Definition of Done:**
+- [ ] Agent Loop REPL mode functional with slash commands
+- [ ] /scan command with scope selection working
+- [ ] Scanner UI with live spinner updates
+- [ ] Scan Results Summary with migration prompt
+- [ ] Session State Manager maintaining scan results
+- [ ] /status, /help, /exit commands working
 - [ ] Gemini CLI adapter complete
 - [ ] Cursor adapter complete
 - [ ] All 4 tools supported (Claude, OpenCode, Gemini, Cursor)
 - [ ] Cross-tool matrix tests passing
-- [ ] CLI updated with new options
 
 ---
 
