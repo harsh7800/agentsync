@@ -37,8 +37,8 @@ Sprint 3: [████████████████████] 100% �
 Sprint 4 Phase 1: [██████████] 100% ✅ COMPLETE (18/18 tasks) - Agent Mode REPL
 Sprint 4 Phase 1.5: [██████████] 100% ✅ COMPLETE (12/12 tasks) - AI Scanner + OpenCode Fix
 Sprint 4 Phase 1.6: [████████░░] 75%  (9/12 tasks) - Modern TUI with Ink (IN PROGRESS)
-Sprint 4 Phase 2: [████████░░] 88%  (7/8 tasks) - Gemini/Cursor adapters
-Overall:  [█████████████░░░░░░░] 70% (83/134 tasks)
+Sprint 4 Phase 2: [██████████] 100% ✅ COMPLETE (8/8 tasks) - Gemini/Cursor adapters
+Overall:  [██████████████░░░░░░] 75% (101/134 tasks)
 ```
 
 ### Latest Metrics
@@ -544,7 +544,7 @@ packages/cli/src/ui-ink/
 | S4-23 | Implement Gemini → Claude translator | Core | [x] |
 | S4-24 | Implement Cursor → OpenCode translator | Core | [x] |
 | S4-25 | Update CLI to support new tool options (--from/--to) | CLI | [x] |
-| S4-26 | Cross-tool matrix tests for 4-tool combinations | E2E | [ ] |
+| S4-26 | Cross-tool matrix tests for 4-tool combinations | E2E | [x] |
 
 **Sprint 4 Definition of Done:**
 - [x] Agent Loop REPL mode functional with slash commands
