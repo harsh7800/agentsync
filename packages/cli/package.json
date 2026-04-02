@@ -1,6 +1,6 @@
 {
   "name": "@agent-sync/cli",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "AI-assisted CLI for migrating AI agent configurations between Claude Code, Gemini CLI, OpenCode, Cursor, and more",
   "type": "module",
   "main": "./dist/index.js",
@@ -39,7 +39,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@agent-sync/core": "1.1.0",
+    "@agent-sync/core": "^1.2.1",
     "@agent-sync/schemas": "1.1.0",
     "boxen": "^8.0.1",
     "chalk": "^5.3.0",

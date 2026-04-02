@@ -42,8 +42,8 @@ importers:
   packages/cli:
     dependencies:
       '@agent-sync/core':
-        specifier: 1.1.0
-        version: 1.1.0
+        specifier: ^1.2.1
+        version: link:../core
       '@agent-sync/schemas':
         specifier: 1.1.0
         version: 1.1.0
@@ -148,10 +148,6 @@ importers:
         version: 5.9.3
 
 packages:
-
-  /@agent-sync/core@1.1.0:
-    resolution: {integrity: sha512-rir5AULySowmvaY+EXzWQfJQTvrmB56X/pm5Hk9Fjm0xkMZMQ3OmVAnRN6uJpT70RkQE8cFU7lp5riPLK0Exmw==}
-    dev: false
 
   /@agent-sync/schemas@1.1.0:
     resolution: {integrity: sha512-egz1zhWvcvu2LLEAuUktVc3A1G/1R2+q6E1bBlEF4N2xiDkDD4F21g3Rbv3/coDt870qtGKsqBItZSzxFOLEUA==}
