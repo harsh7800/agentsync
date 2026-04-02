@@ -1,6 +1,6 @@
 {
   "name": "@agent-sync/schemas",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Versioned JSON schemas for AI agent tools - Claude, Gemini, OpenCode, Cursor, and more",
   "type": "module",
   "main": "./dist/index.js",
