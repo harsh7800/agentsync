@@ -1,0 +1,7 @@
+[policy]
+max_tokens = 4000
+allowed_providers = ["openai", "anthropic"]
+
+[security]
+require_sandbox = true
+allow_network = false

@@ -274,7 +274,7 @@ export async function showEntityViewer(results: ScanResults): Promise<void> {
 /**
  * Supported adapters (only fully implemented ones)
  */
-export const SUPPORTED_ADAPTERS = ['claude', 'opencode'] as const;
+export const SUPPORTED_ADAPTERS = ['claude', 'opencode', 'codex'] as const;
 export type SupportedAdapter = typeof SUPPORTED_ADAPTERS[number];
 
 /**
@@ -313,6 +313,7 @@ function getAdapterIcon(adapter: string): string {
   const icons: Record<string, string> = {
     claude: '🟣',
     opencode: '🔵',
+    codex: '🟢',
     gemini: '🔴',
     cursor: '⚪',
     copilot: '⚫'
@@ -329,7 +330,8 @@ function capitalize(str: string): string {
  */
 const DEFAULT_ADAPTER_PATHS: Record<SupportedAdapter, string> = {
   claude: '~/.config/claude/',
-  opencode: '~/.config/opencode/'
+  opencode: '~/.config/opencode/',
+  codex: '~/.codex/'
 };
 
 /**
@@ -670,6 +672,12 @@ export async function executeScan(
       if (!tools.includes('claude')) {
         tools.push('claude');
         ui.reportToolDetected('claude');
+      }
+    }
+    if (scanResult.files.some(f => f.path.includes('.codex') || f.path.includes('codex'))) {
+      if (!tools.includes('codex')) {
+        tools.push('codex');
+        ui.reportToolDetected('codex');
       }
     }
     

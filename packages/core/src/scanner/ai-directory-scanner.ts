@@ -55,6 +55,13 @@ const TOOL_PATTERNS = {
     skills: ['**/.claude/skills/**/SKILL.md', '**/.config/claude/skills/**/SKILL.md'],
     configs: ['**/.claude/settings.json', '**/.config/claude/settings.json', '**/.mcp.json'],
   },
+  codex: {
+    name: 'codex',
+    icon: '🟢',
+    agents: ['**/.codex/agents/*.md', '**/.codex/AGENTS.md'],
+    skills: ['**/.codex/skills/**/SKILL.md'],
+    configs: ['**/.codex/config.toml'],
+  },
   cursor: {
     name: 'cursor',
     icon: '🟢',
@@ -388,9 +395,13 @@ export class AIDirectoryScanner {
     // Check for global indicators
     if (
       normalizedPath.includes('.config/opencode') ||
+      normalizedPath.includes('.config/claude') ||
+      normalizedPath.includes('.codex') ||
       normalizedPath.includes('~/.config') ||
       normalizedPath.match(/\/Users\/[^/]+\/.config/) ||
-      normalizedPath.match(/\/home\/[^/]+\/.config/)
+      normalizedPath.match(/\/home\/[^/]+\/.config/) ||
+      normalizedPath.match(/\/Users\/[^/]+\/.codex/) ||
+      normalizedPath.match(/\/home\/[^/]+\/.codex/)
     ) {
       return 'global';
     }
@@ -603,6 +614,7 @@ export class AIDirectoryScanner {
    */
   private detectToolFromPath(filePath: string): string {
     if (filePath.includes('.opencode') || filePath.includes('/opencode/')) return 'opencode';
+    if (filePath.includes('.codex') || filePath.includes('/codex/')) return 'codex';
     if (filePath.includes('.claude') || filePath.includes('/claude/')) return 'claude';
     if (filePath.includes('.cursor') || filePath.includes('/cursor/')) return 'cursor';
     if (filePath.includes('.gemini') || filePath.includes('/gemini/')) return 'gemini';

@@ -9,7 +9,7 @@
 import * as path from 'path';
 import * as os from 'os';
 
-export type ToolName = 'claude' | 'opencode' | 'gemini' | 'cursor' | 'copilot';
+export type ToolName = 'claude' | 'opencode' | 'gemini' | 'cursor' | 'copilot' | 'codex';
 
 /**
  * Tool-specific directory structure definition
@@ -134,6 +134,20 @@ export const TOOL_PATH_REGISTRY: Record<ToolName, ToolDirectoryStructure> = {
     skillFileName: undefined,
     usesAgentDirectories: false,
     usesSkillDirectories: false
+  },
+
+  codex: {
+    displayName: 'Codex',
+    globalRoot: process.env.CODEX_HOME || path.join(os.homedir(), '.codex'),
+    projectRoot: '.codex',
+    configFiles: ['config.toml'],
+    agentsDir: 'agents',
+    skillsDir: 'skills',
+    mcpDir: undefined,
+    agentFileName: 'agent.md',
+    skillFileName: 'SKILL.md',
+    usesAgentDirectories: true,
+    usesSkillDirectories: true
   }
 };
 

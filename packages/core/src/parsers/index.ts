@@ -16,12 +16,18 @@ export { OpenCodeAgentParser } from './opencode/parsers/agent.parser.js';
 export { OpenCodeSkillParser } from './opencode/parsers/skill.parser.js';
 export { OpenCodeMCPParser } from './opencode/parsers/mcp.parser.js';
 export { OpenCodeConfigParser } from './opencode/parsers/config.parser.js';
+export { CodexToolParser, CodexScanner } from './codex/index.js';
+export { CodexAgentParser } from './codex/parsers/agent.parser.js';
+export { CodexSkillParser } from './codex/parsers/skill.parser.js';
+export { CodexConfigParser } from './codex/parsers/config.parser.js';
 
 // Common Schema Normalizers & Adapters (NEW)
 export { OpenCodeNormalizer, createOpenCodeNormalizer } from './opencode/normalizer.js';
 export { OpenCodeAdapter, createOpenCodeAdapter } from './opencode/adapter.js';
 export { ClaudeNormalizer, createClaudeNormalizer } from './claude/normalizer.js';
 export { ClaudeAdapter, createClaudeAdapter } from './claude/adapter.js';
+export { CodexNormalizer, createCodexNormalizer } from './codex/normalizer.js';
+export { CodexAdapter, createCodexAdapter } from './codex/adapter.js';
 
 // Legacy parsers (for backward compatibility)
 export { ClaudeParser } from './claude.parser.js';
@@ -32,6 +38,7 @@ export { CursorParser } from './cursor.parser.js';
 // Type exports
 export type { ClaudeToolModel, ClaudeScanResult, ClaudeScanErrors, ClaudeMCPServer, ClaudeAgent } from './claude/types.js';
 export type { OpenCodeToolModel, OpenCodeScanResult, OpenCodeScanErrors, OpenCodeMCPServer, OpenCodeAgent, OpenCodeSkill, OpenCodeSettings } from './opencode/types.js';
+export type { CodexToolModel, CodexScanResult, CodexScanErrors, CodexMCPServer, CodexAgent, CodexSkill, CodexSettings, CodexPrompt, CodexSession } from './codex/types.js';
 
 // Legacy type exports
 export type { ClaudeConfig, ClaudeMCPServer as ClaudeMCPServerLegacy } from '../types/claude.types.js';

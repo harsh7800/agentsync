@@ -14,6 +14,25 @@ interface ScanOptions {
 }
 
 /**
+ * Detect tools from scanned files
+ */
+function detectToolsFromFiles(files: Array<{ path: string; tool?: string }>): string[] {
+  const tools = new Set<string>();
+  for (const file of files) {
+    if (file.tool && file.tool !== 'unknown') {
+      tools.add(file.tool);
+    }
+    // Also check path patterns
+    if (file.path.includes('.codex') || file.path.includes('/codex/')) tools.add('codex');
+    if (file.path.includes('.opencode') || file.path.includes('/opencode/')) tools.add('opencode');
+    if (file.path.includes('.claude') || file.path.includes('/claude/')) tools.add('claude');
+    if (file.path.includes('.cursor') || file.path.includes('/cursor/')) tools.add('cursor');
+    if (file.path.includes('.gemini') || file.path.includes('/gemini/')) tools.add('gemini');
+  }
+  return Array.from(tools);
+}
+
+/**
  * Create the scan command
  */
 export function createScanCommand(): Command {
@@ -110,12 +129,12 @@ async function runAIScan(options: ScanOptions): Promise<void> {
         const metadata = c.metadata as { mcpServers?: unknown[] } | undefined;
         return acc + (metadata?.mcpServers?.length || 0);
       }, 0),
-      toolsDetected: result.agents.length > 0 || result.skills.length > 0 ? ['opencode'] : []
+      toolsDetected: detectToolsFromFiles(result.files)
     });
 
     // Build summary
     const summary = {
-      toolsDetected: result.agents.length > 0 || result.skills.length > 0 ? ['opencode'] : [],
+      toolsDetected: detectToolsFromFiles(result.files),
       totalAgents: result.agents.length,
       totalSkills: result.skills.length,
       totalMCPServers: result.configs.reduce((acc, c) => {
@@ -178,7 +197,7 @@ async function runManualScan(options: ScanOptions): Promise<void> {
 
     // Build summary
     const summary = {
-      toolsDetected: result.agents.length > 0 || result.skills.length > 0 ? ['opencode'] : [],
+      toolsDetected: detectToolsFromFiles(result.files),
       totalAgents: result.agents.length,
       totalSkills: result.skills.length,
       totalMCPServers: result.configs.reduce((acc, c) => {

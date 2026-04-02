@@ -148,6 +148,9 @@ export interface CommonMetadata {
     
     /** Copilot-specific fields */
     copilot?: Record<string, unknown>;
+
+    /** Codex-specific fields */
+    codex?: Record<string, unknown>;
     
     /** Any other tool */
     [tool: string]: Record<string, unknown> | undefined;
