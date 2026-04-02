@@ -11,6 +11,14 @@ import { Banner, Colors } from './ui/index.js';
 import { FileOperations } from '@agent-sync/core';
 import * as path from 'path';
 import * as os from 'os';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+
+// Get version from package.json
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const pkg = JSON.parse(readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'));
+
 
 // Import Ink TUI
 import { canRenderInk, renderInkApp } from './ui-ink/index.js';
@@ -60,7 +68,7 @@ if (noArgsProvided) {
 program
   .name('agentsync')
   .description('AI-assisted CLI for migrating AI tool configurations')
-  .version('1.1.0');
+  .version(pkg.version);
 
 // Add commands
 program.addCommand(createMigrateCommand());
