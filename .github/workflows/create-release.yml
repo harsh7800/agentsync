@@ -1,0 +1,146 @@
+name: Create Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Version bump type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+      pre_release:
+        description: 'Mark as pre-release'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Compute new version
+        id: version
+        run: |
+          CURRENT=$(node -p "require('./package.json').version")
+          echo "current=$CURRENT" >> $GITHUB_OUTPUT
+
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+
+          case "${{ inputs.version_type }}" in
+            major) MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0 ;;
+            minor) MINOR=$((MINOR + 1)); PATCH=0 ;;
+            patch) PATCH=$((PATCH + 1)) ;;
+          esac
+
+          NEW="$MAJOR.$MINOR.$PATCH"
+          echo "new=$NEW" >> $GITHUB_OUTPUT
+          echo "tag=v$NEW" >> $GITHUB_OUTPUT
+          echo "Version: $CURRENT → $NEW"
+
+      - name: Bump versions
+        run: |
+          NEW_VERSION="${{ steps.version.outputs.new }}"
+
+          # Update root package.json
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            pkg.version = '$NEW_VERSION';
+            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+          "
+
+          # Update all workspace package.json files
+          for file in packages/*/package.json; do
+            [ -f "$file" ] || continue
+            node -e "
+              const fs = require('fs');
+              const pkg = JSON.parse(fs.readFileSync('$file', 'utf8'));
+              pkg.version = '$NEW_VERSION';
+
+              // Update internal dependency versions
+              if (pkg.dependencies) {
+                for (const dep of Object.keys(pkg.dependencies)) {
+                  if (dep.startsWith('@agent-sync/')) {
+                    pkg.dependencies[dep] = '$NEW_VERSION';
+                  }
+                }
+              }
+              if (pkg.devDependencies) {
+                for (const dep of Object.keys(pkg.devDependencies)) {
+                  if (dep.startsWith('@agent-sync/')) {
+                    pkg.devDependencies[dep] = '$NEW_VERSION';
+                  }
+                }
+              }
+
+              fs.writeFileSync('$file', JSON.stringify(pkg, null, 2) + '\n');
+            "
+            echo "Updated $file"
+          done
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Type check
+        run: pnpm typecheck
+
+      - name: Build
+        run: pnpm build
+
+      - name: Run tests
+        run: pnpm test -- --run
+
+      - name: Commit and tag
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+          git add -A
+          git commit -m "chore(release): ${{ steps.version.outputs.tag }}" || echo "No changes to commit"
+
+          git tag -a "${{ steps.version.outputs.tag }}" -m "Release ${{ steps.version.outputs.tag }}"
+          git push origin HEAD "${{ steps.version.outputs.tag }}"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: AgentSync CLI ${{ steps.version.outputs.tag }}
+          generate_release_notes: true
+          prerelease: ${{ inputs.pre_release }}
+          discussion_category_name: Announcements
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Summary
+        run: |
+          echo "## Release ${{ steps.version.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version**: ${{ steps.version.outputs.current }} → ${{ steps.version.outputs.new }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Tag**: ${{ steps.version.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Pre-release**: ${{ inputs.pre_release }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "The tag push will trigger the Release workflow for npm publish." >> $GITHUB_STEP_SUMMARY
