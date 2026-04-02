@@ -1,6 +1,6 @@
 {
   "name": "agentsync",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "AI-assisted CLI for migrating AI agent configurations between development tools",
   "private": true,
   "repository": {
