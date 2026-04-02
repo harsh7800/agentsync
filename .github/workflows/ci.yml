@@ -59,7 +59,7 @@ jobs:
   release:
     name: Auto Release
     needs: [build, typecheck]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[skip release]')
     runs-on: ubuntu-latest
     permissions:
       contents: write
