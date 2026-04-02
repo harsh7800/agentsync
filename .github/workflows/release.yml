@@ -36,24 +36,9 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Publish @agent-sync/schemas
-        run: npm publish --access public
-        working-directory: packages/schemas
-        continue-on-error: true
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish @agent-sync/core
-        run: npm publish --access public
-        working-directory: packages/core
-        continue-on-error: true
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish @agent-sync/cli
-        run: npm publish --access public
-        working-directory: packages/cli
-        continue-on-error: true
+      - name: Publish packages
+        run: |
+          pnpm -r publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 

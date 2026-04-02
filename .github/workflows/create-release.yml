@@ -64,38 +64,13 @@ jobs:
         run: |
           NEW_VERSION="${{ steps.version.outputs.new }}"
 
-          # Update root package.json
-          node -e "
-            const fs = require('fs');
-            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-            pkg.version = '$NEW_VERSION';
-            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
-          "
-
-          # Update all workspace package.json files
-          for file in packages/*/package.json; do
+          # Update version in root and all workspace package.json files
+          for file in package.json packages/*/package.json; do
             [ -f "$file" ] || continue
             node -e "
               const fs = require('fs');
               const pkg = JSON.parse(fs.readFileSync('$file', 'utf8'));
               pkg.version = '$NEW_VERSION';
-
-              // Update internal dependency versions
-              if (pkg.dependencies) {
-                for (const dep of Object.keys(pkg.dependencies)) {
-                  if (dep.startsWith('@agent-sync/')) {
-                    pkg.dependencies[dep] = '$NEW_VERSION';
-                  }
-                }
-              }
-              if (pkg.devDependencies) {
-                for (const dep of Object.keys(pkg.devDependencies)) {
-                  if (dep.startsWith('@agent-sync/')) {
-                    pkg.devDependencies[dep] = '$NEW_VERSION';
-                  }
-                }
-              }
-
               fs.writeFileSync('$file', JSON.stringify(pkg, null, 2) + '\n');
             "
             echo "Updated $file"

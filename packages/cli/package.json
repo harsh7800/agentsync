@@ -39,8 +39,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@agent-sync/core": "^1.2.1",
-    "@agent-sync/schemas": "1.1.0",
+    "@agent-sync/core": "workspace:*",
+    "@agent-sync/schemas": "workspace:*",
     "boxen": "^8.0.1",
     "chalk": "^5.3.0",
     "cli-table3": "^0.6.5",

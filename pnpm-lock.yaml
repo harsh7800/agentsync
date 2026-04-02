@@ -42,11 +42,11 @@ importers:
   packages/cli:
     dependencies:
       '@agent-sync/core':
-        specifier: ^1.2.1
+        specifier: workspace:*
         version: link:../core
       '@agent-sync/schemas':
-        specifier: 1.1.0
-        version: 1.1.0
+        specifier: workspace:*
+        version: link:../schemas
       boxen:
         specifier: ^8.0.1
         version: 8.0.1
@@ -148,10 +148,6 @@ importers:
         version: 5.9.3
 
 packages:
-
-  /@agent-sync/schemas@1.1.0:
-    resolution: {integrity: sha512-egz1zhWvcvu2LLEAuUktVc3A1G/1R2+q6E1bBlEF4N2xiDkDD4F21g3Rbv3/coDt870qtGKsqBItZSzxFOLEUA==}
-    dev: false
 
   /@alcalzone/ansi-tokenize@0.1.3:
     resolution: {integrity: sha512-3yWxPTq3UQ/FY9p1ErPxIyfT64elWaMvM9lIHnaqpyft63tkxodF5aUElYHrdisWve5cETkh1+KBw1yJuW0aRw==}
