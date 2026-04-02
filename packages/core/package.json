@@ -1,6 +1,6 @@
 {
   "name": "@agent-sync/core",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Core transformation logic for AgentSync CLI - parsers, translators, and migration utilities",
   "type": "module",
   "main": "./dist/index.js",
@@ -36,7 +36,10 @@
     "test": "vitest --testPathPattern=core",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": {},
+  "dependencies": {
+    "glob": "^13.0.0",
+    "js-yaml": "^4.1.0"
+  },
   "devDependencies": {
     "@types/node": "^20.10.0",
     "typescript": "^5.3.3",
