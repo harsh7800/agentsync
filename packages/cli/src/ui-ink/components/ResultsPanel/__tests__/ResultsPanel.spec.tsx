@@ -172,7 +172,7 @@ const mockScanResult: ScanResultData = {
   ],
   skills: [
     { name: 'test-generator', tool: 'opencode', path: './.opencode/skills/test-generator/SKILL.md' },
-    { name: 'test-gen', tool: 'opencode', path: './.opencode/skills/test-gen/SKILL.md' }
+    { name: 'test-code-gen', tool: 'opencode', path: './.opencode/skills/test-code-gen/SKILL.md' }
   ],
   mcps: [],
   paths: ['./.opencode']

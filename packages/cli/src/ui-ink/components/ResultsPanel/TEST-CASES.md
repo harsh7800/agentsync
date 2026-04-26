@@ -403,8 +403,8 @@ export const mockScanResult = {
     { name: 'engineering-agent', tool: 'opencode', path: './.opencode/agents/engineering-agent.md' }
   ],
   skills: [
-    { name: 'test-generator', tool: 'opencode', path: './.opencode/skills/test-generator/SKILL.md' },
-    { name: 'test-gen', tool: 'opencode', path: './.opencode/skills/test-gen/SKILL.md' }
+    { name: 'spec-writer', tool: 'opencode', path: './.opencode/skills/spec-writer/SKILL.md' },
+    { name: 'test-generator', tool: 'opencode', path: './.opencode/skills/test-generator/SKILL.md' }
   ],
   mcps: [],
   paths: ['./.opencode']
@@ -426,9 +426,9 @@ export const mockMigrationResult = {
   ],
   migratedSkills: [
     {
-      name: 'test-generator',
-      sourcePath: './.opencode/skills/test-generator/SKILL.md',
-      targetPath: '~/.config/claude/skills/test-generator/',
+      name: 'spec-writer',
+      sourcePath: './.opencode/skills/spec-writer/SKILL.md',
+      targetPath: '~/.config/claude/skills/spec-writer/',
       status: 'success' as const
     }
   ],

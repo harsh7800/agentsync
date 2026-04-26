@@ -236,11 +236,11 @@ export interface BackupInfo {
 │  │    ./.opencode/agents/engineering-agent.md            │  │
 │  └──────────────────────────────────────────────────────┘  │
 │                                                             │
-│  ┌─ Skills Found (13) ───────────────────────────────────┐  │
+│  ┌─ Skills Found (12) ───────────────────────────────────┐  │
 │  │  • test-generator                                     │  │
-│  │  • test-gen                                           │  │
 │  │  • test-code-gen                                      │  │
-│  │  • ... and 10 more                                    │  │
+│  │  • spec-writer                                        │  │
+│  │  • ... and 9 more                                     │  │
 │  └──────────────────────────────────────────────────────┘  │
 │                                                             │
 │  ┌─ MCP Servers (0) ─────────────────────────────────────┐  │
@@ -284,7 +284,7 @@ export interface BackupInfo {
 │  │    Target: ~/.config/claude/agents/engineering-agent.md│  │
 │  └──────────────────────────────────────────────────────┘  │
 │                                                             │
-│  ┌─ Migrated Skills (13) ────────────────────────────────┐  │
+│  ┌─ Migrated Skills (12) ────────────────────────────────┐  │
 │  │  ✓ test-generator                                     │  │
 │  │    Source: ./.opencode/skills/test-generator/SKILL.md │  │
 │  │    Target: ~/.config/claude/skills/test-generator/    │  │
