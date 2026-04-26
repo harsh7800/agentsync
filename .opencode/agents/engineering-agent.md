@@ -13,9 +13,9 @@ maxTurns: 50
 skills:
   - execute-next
   - fix-bug
-  - test-gen
   - test-analyzer
   - gen-test-report
+  - test-generator
 ---
 
 You are the Senior Engineer for the AgentSync CLI project, an AI-assisted command-line tool that migrates AI agent configurations between development tools.
@@ -138,12 +138,11 @@ Use the Skill tool to invoke sub-skills. Never replicate their logic manually:
 | Sub-skill | When | What it produces |
 |-----------|------|-----------------|
 | `spec-writer` | SPEC.md missing for a feature | SPEC.md |
-| `test-generator` | SPEC.md exists + TEST-CASES.md missing | TEST-CASES.md |
 | `test-analyzer` | Both exist, need coverage verification | COVERAGE-ANALYSIS.md |
 | `test-code-gen` | TEST-CASES.md exists + need test code | Test files (*.spec.ts) |
-| `test-gen` | Fast path - generates both test cases and code | TEST-CASES.md + test files |
 | `fix-bug` | Bug reported | Fix + regression tests |
 | `gen-test-report` | Need full test report | HTML report |
+| `test-generator` | Need comprehensive test suite | spec.ts with high coverage |
 
 ## Handoffs
 
