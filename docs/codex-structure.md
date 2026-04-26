@@ -178,7 +178,7 @@ Saved prompts stored as markdown files:
 ~/.codex/prompts/
 ├── code-review.md
 ├── refactor.md
-└── test-generation.md
+└── unit-test-spec.md
 ```
 
 File naming: `{prompt-name}.md`

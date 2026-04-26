@@ -164,8 +164,8 @@ During scanning:
 - Scanning current directory...
   ✓ Found agent: test-runner-agent (....opencode\agents\test-runner-agent.md)
   ✓ Found agent: engineering-agent (....opencode\agents\engineering-agent.md)
-  ✓ Found skill: test-generator (...encode\skills\test-generator\SKILL.md)
-  ✓ Found skill: test-gen (...nc\.opencode\skills\test-gen\SKILL.md)
+  ✓ Found skill: test-code-gen (...nc\.opencode\skills\test-code-gen\SKILL.md)
+  ✓ Found skill: spec-writer (...nc\.opencode\skills\spec-writer\SKILL.md)
   ℹ Detected tool: opencode
 ✔ Scan complete!
 ```
@@ -184,20 +184,19 @@ Agents Found: 2
   • test-runner-agent
   • engineering-agent
 
-Skills Found: 13
-  • test-generator
-  • test-gen
+Skills Found: 11
   • test-code-gen
   • spec-writer
+  • test-analyzer
   • phase-check
-  • (8 more...)
+  • (7 more...)
 
 MCP Servers:
   None found
 
 Locations:
   C:\Users\shivm\OneDrive\Desktop\agentsync\.opencode\agents\
-  C:\Users\shivm\OneDrive\Desktop\agentsync\.opencode\skills\test-generator\
+  C:\Users\shivm\OneDrive\Desktop\agentsync\.opencode\skills\test-code-gen\
   ... (13 more paths)
 
 Duration: 0.6s
@@ -261,7 +260,7 @@ Migration Summary:
   Source: opencode
   Target: claude
   Agents: 2
-  Skills: 13
+  Skills: 11
   MCP Servers: 0
 
 ? Proceed with migration? (Y/n)
@@ -287,11 +286,10 @@ Migrated Files:
     ├── test-runner-agent.md
     └── engineering-agent.md
   ✓ ~/.config/claude/skills/
-    ├── test-generator/SKILL.md
-    ├── test-gen/SKILL.md
-    └── (11 more skills)
+    ├── test-code-gen/SKILL.md
+    └── (10 more skills)
 
-Total: 2 agents, 13 skills migrated
+Total: 2 agents, 11 skills migrated
 Duration: 1.2s
 
 ? What would you like to do next?
@@ -315,20 +313,19 @@ Agents (2):
   2. engineering-agent
      Use for implementing features (TDD), fixing bugs...
 
-Skills (13):
+Skills (12):
   1. test-code-gen
-  2. test-gen
-  3. test-generator
-  4. test-analyzer
-  5. spec-writer
-  6. phase-check
-  7. project-status
-  8. new-feature
-  9. gen-test-report
-  10. git-commit-agentsync
-  11. fix-bug
-  12. doc-audit
-  13. execute-next
+  2. test-generator
+  3. test-analyzer
+  4. spec-writer
+  5. phase-check
+  6. project-status
+  7. new-feature
+  8. gen-test-report
+  9. git-commit-agentsync
+  10. fix-bug
+  11. doc-audit
+  12. execute-next
 
 ═══════════════════════════════════════════
 
@@ -384,9 +381,10 @@ The Ink-based TUI will provide a modern, Cloud/OpenCode-style interface using Re
 │              │  │    ✓ test-runner-agent                  │ │
 │              │  │    ✓ engineering-agent                  │ │
 │              │  │                                         │ │
-│              │  │  Skills (13):                           │ │
+│              │  │  Skills (12):                           │ │
 │              │  │    ✓ test-generator                     │ │
-│              │  │    ✓ test-gen                           │ │
+│              │  │    ✓ test-code-gen                      │ │
+│              │  │    ✓ spec-writer                       │ │
 │              │  │    ...                                  │ │
 │              │  │                                         │ │
 │              │  └─────────────────────────────────────────┘ │
@@ -542,10 +540,10 @@ packages/cli/src/ui-ink/
 │    └── engineering-agent.md                                │
 │  ✓ ~/.config/claude/skills/                                │
 │    ├── test-generator/SKILL.md                             │
-│    ├── test-gen/SKILL.md                                   │
-│    └── (11 more skills)                                    │
+│    ├── test-code-gen/SKILL.md                              │
+│    └── (10 more skills)                                    │
 │                                                             │
-│  Total: 2 agents, 13 skills, 1 config file                  │
+│  Total: 2 agents, 12 skills, 1 config file                  │
 │  Duration: 1.2s                                             │
 │                                                             │
 │  [View Files] [Migrate Again] [Main Menu] [Exit]           │

@@ -57,10 +57,8 @@ tools:
   write: true
   skill: true
 maxTurns: 50
-skills:
   - execute-next
   - fix-bug
-  - test-gen
   - test-analyzer
 ---
 
